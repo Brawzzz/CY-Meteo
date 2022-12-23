@@ -41,8 +41,15 @@ int main(int argc, char *argv[]){
     
     clock_t start;
     clock_t end;
+    
+    int nmb_data = 100; // actualiser avec le script shell
+    int error = 0;
+
+    float data = 0;
 
     double elapsed = 0.f;
+    
+    char line[1024];
 
     //---------- TYPE SORT ----------//
     char* type_sort = NULL;
@@ -51,24 +58,20 @@ int main(int argc, char *argv[]){
     char* tab = "--tab";
     //-------------------------------//
 
-    int nmb_data = 100; // actualiser avec le script shell
-
-    float data = 0;
-    char line[1024];
-
     //---------- NO FILE ----------//
     if (argc == 1){
         printf("Pas de fichier en argument\n");
-        exit(1);
+        error = 1;
     }
-    //---------- NO OPTIONS ----------//
+    //---------- NO SORT OPTIONS ----------//
     else if(argc == 2){
 
         input_filename = argv[1];
         
         if(!(is_csv(input_filename))){
             printf("format de fichier non correct: .csv accepte seulement\n");
-            exit(EXIT_FAILURE);
+            error = 2;
+            //exit(EXIT_FAILURE);
         }
         else{
 
@@ -79,25 +82,39 @@ int main(int argc, char *argv[]){
 
             input_file = fopen(input_filename , "r+");
 
-            start = clock();
-            while (fgets(line, sizeof(line) , input_file) != NULL) {
-                sscanf(line , "%f" , &data);
-
-                data_tree = insert_AVL(data_tree , data);
+            if(input_file == NULL){
+                error = 2;
             }
-            end = clock();
+            else{
 
-            fclose(input_file);
-            
-            output_file = fopen(output_filename , "w");
-            in_fixe_search(data_tree , output_file);
-            fclose(output_file);
+                start = clock();
+                while (fgets(line, sizeof(line) , input_file) != NULL) {
+                    
+                    if(strlen(line) > 1){
+                        sscanf(line , "%f" , &data);
+                        data_tree = insert_AVL(data_tree , data);
+                    }                 
+                }
+                end = clock();
 
-            elapsed = (double)(end - start) / CLOCKS_PER_SEC;
-            printf("Temps écoulé : %f secondes\n", elapsed);
+                fclose(input_file);
+
+                output_file = fopen(output_filename , "w");
+
+                if(output_file == NULL){
+                    error = 3;
+                }
+                else{
+                    in_fixe_search(data_tree , output_file);
+                    fclose(output_file);
+
+                    elapsed = (double)(end - start) / CLOCKS_PER_SEC;
+                    printf("Temps écoulé : %f secondes\n", elapsed);
+                }
+            }
         }
     }
-    //---------- OPTIONS ----------//
+    //---------- WITH SORT OPTIONS ----------//
     else{
         
         input_filename = argv[1];
@@ -105,7 +122,7 @@ int main(int argc, char *argv[]){
             
         if(!(is_csv(input_filename))){
             printf("format de fichier non correct: .csv accepte seulement\n");
-            exit(EXIT_FAILURE);
+            error = 2;
         }
 
         else{
@@ -120,22 +137,36 @@ int main(int argc, char *argv[]){
 
                 input_file = fopen(input_filename , "r+");
 
-                start = clock();
-                while (fgets(line, sizeof(line) , input_file) != NULL) {
-                    sscanf(line , "%f" , &data);
-
-                    data_tree = insert_AVL(data_tree , data);
+                if(input_file == NULL){
+                    error = 2;
                 }
-                end = clock();
+                else{
 
-                fclose(input_file);
-                
-                output_file = fopen(output_filename , "w");
-                in_fixe_search(data_tree , output_file);
-                fclose(output_file);
+                    start = clock();
+                    while (fgets(line, sizeof(line) , input_file) != NULL) {
 
-                elapsed = (double)(end - start) / CLOCKS_PER_SEC;
-                printf("Temps écoulé : %f secondes\n", elapsed);
+                        if(strlen(line) > 1){
+                            sscanf(line , "%f" , &data);
+                            data_tree = insert_AVL(data_tree , data);
+                        }
+                    }
+                    end = clock();
+
+                    fclose(input_file);
+                    
+                    output_file = fopen(output_filename , "w");
+
+                    if(output_file == NULL){
+                        error = 3;
+                    }
+                    else{
+                        in_fixe_search(data_tree , output_file);
+                        fclose(output_file);
+
+                        elapsed = (double)(end - start) / CLOCKS_PER_SEC;
+                        printf("Temps écoulé : %f secondes\n", elapsed);
+                    }
+                }
             }
 
             //---------- *--abr OPTION* ----------//
@@ -145,26 +176,38 @@ int main(int argc, char *argv[]){
 
                 input_file = fopen(input_filename , "r+");
 
-                start = clock();
-                while (fgets(line, sizeof(line) , input_file) != NULL) {
-                    sscanf(line , "%f" , &data);
-
-                    data_tree = insert_ABR(data_tree , data);
+                if(input_file == NULL){
+                    error = 2;
                 }
-                end = clock();
+                else{
+                    start = clock();
+                    while (fgets(line, sizeof(line) , input_file) != NULL) {
 
-                fclose(input_file);
-                
+                        if(strlen(line) > 1){
+                            sscanf(line , "%f" , &data);
+                            data_tree = insert_ABR(data_tree , data);
+                        }
+                    }
+                    end = clock();
 
-                output_file = fopen(output_filename , "w");
-                in_fixe_search(data_tree , output_file);
-                fclose(output_file);
+                    fclose(input_file);
+                    
+                    output_file = fopen(output_filename , "w");
 
-                elapsed = (double)(end - start) / CLOCKS_PER_SEC;
-                printf("Temps écoulé : %f secondes\n", elapsed);
+                    if(output_file == NULL){
+                        error = 3;
+                    }
+                    else{
+                        in_fixe_search(data_tree , output_file);
+                        fclose(output_file);
+
+                        elapsed = (double)(end - start) / CLOCKS_PER_SEC;
+                        printf("Temps écoulé : %f secondes\n", elapsed);
+                    }
+                }
             }
             
-            //---------- *--avl OPTION* ----------//
+            //---------- *--tab OPTION* ----------//
             else if (strcmp(type_sort , tab) == 0){
 
                 int i = 0;
@@ -172,31 +215,49 @@ int main(int argc, char *argv[]){
 
                 if(data_tab == NULL){
                     printf("ERROR");
-                    exit(1);
+                    exit(4);
                 } 
 
                 input_file = fopen(input_filename , "r+");
-                
-                start = clock();
-                while (fgets(line, sizeof(line) , input_file) != NULL) {
-                    sscanf(line , "%f" , &data);
-                    data_tab[i] = data;
-                    i++; 
+
+                if(input_file == NULL){
+                    error = 2;
                 }
+                else{
+                    start = clock();
+                    while (fgets(line, sizeof(line) , input_file) != NULL) {
 
-                qsort(data_tab , nmb_data , sizeof(float) , compare_float);
-                end = clock();
+                        if(strlen(line) > 1){
+                            sscanf(line , "%f" , &data);
+                            data_tab[i] = data;
+                            i++;
+                        } 
+                    }
 
-                fclose(input_file);
+                    qsort(data_tab , nmb_data , sizeof(float) , compare_float);
+                    end = clock();
 
-                output_file = fopen(output_filename , "w");
-                print_tab(data_tab , nmb_data , output_file);
-                fclose(output_file);
+                    fclose(input_file);
 
-                elapsed = (double)(end - start) / CLOCKS_PER_SEC;
-                printf("Temps écoulé : %f secondes\n", elapsed);
+                    output_file = fopen(output_filename , "w");
+
+                    if(output_file == NULL){
+                        error = 3;
+                    }
+                    else{
+                        print_tab(data_tab , nmb_data , output_file);
+                        fclose(output_file);
+
+                        elapsed = (double)(end - start) / CLOCKS_PER_SEC;
+                        printf("Temps écoulé : %f secondes\n", elapsed);
+                    }
+                }
+            }
+            else{
+                printf("mode de tris inconnu\n");
+                error = 1;
             }
         }
     }
-    return 0;
+    return error;
 }
