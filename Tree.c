@@ -54,10 +54,10 @@ bool is_empty(p_tree t){
     }
 }
 
-bool is_sheet(p_tree t){
+bool is_leaf(p_tree t){
 
     if(is_empty(t)){
-        printf("ERROR\n");
+        printf("L'arbre est vide\n");
         exit(1);
     }  
 
@@ -70,21 +70,21 @@ bool is_sheet(p_tree t){
     }
 }
 
-int nmb_sheet(p_tree t){
+int nmb_leaf(p_tree t){
     
     if (is_empty(t)){
         return 0;
     } 
-    if (is_sheet(t)){
+    if (is_leaf(t)){
         return 1;
     } 
-    return nmb_sheet(t -> left_son) + nmb_sheet(t -> right_son);
+    return nmb_leaf(t -> left_son) + nmb_leaf(t -> right_son);
 }
 
 bool has_left_son(p_tree t){
     
     if(is_empty(t)){
-        printf("ERROR\n");
+        printf("L'arbre est vide\n");
         exit(1);
     }  
 
@@ -100,7 +100,7 @@ bool has_left_son(p_tree t){
 bool has_right_son(p_tree t){
 
     if(is_empty(t)){
-        printf("ERROR\n");
+        printf("L'arbre est vide\n");
         exit(1);
     }  
 
@@ -113,16 +113,16 @@ bool has_right_son(p_tree t){
     }
 }
 
-int nmb_knots(p_tree t){
+int nmb_nodes(p_tree t){
 
     if(is_empty(t)){
         return 0;
     }
-    else if(is_sheet(t)){
+    else if(is_leaf(t)){
         return 1;
     } 
     else{
-        return 1 + nmb_knots(t -> left_son) + nmb_knots(t -> right_son); 
+        return 1 + nmb_nodes(t -> left_son) + nmb_nodes(t -> right_son); 
     }
 }
 
@@ -142,16 +142,14 @@ int get_height(p_tree t){
 }
 
 bool add_left_son(p_tree t , float element){
-    
-    p_tree new = create_tree(element);
 
     if(is_empty(t)){
-        t = new;
+        t = create_tree(element);
         return true;
     }
 
     else if (!has_left_son(t)){
-        t -> left_son = new;  
+        t -> left_son = create_tree(element);  
         return true;
     }
 
@@ -161,16 +159,14 @@ bool add_left_son(p_tree t , float element){
 }
 
 bool add_right_son(p_tree t , float element){
-    
-    p_tree new = create_tree(element);
 
     if(is_empty(t)){
-        t = new;
+        t = create_tree(element);
         return true;
     }
 
     else if (!has_right_son(t)){
-        t -> right_son = new;
+        t -> right_son = create_tree(element);
         return true;
     }
     
@@ -349,7 +345,7 @@ bool arbre_filiforme(p_tree t){
     }
 
     else{
-        if (nmb_sheet(t) == 1){
+        if (nmb_leaf(t) == 1){
             return true;
         }
         else{
@@ -364,7 +360,7 @@ bool arbre_filiforme(p_tree t){
 //**********************************************                         **********************************************//
 //*********************************************************************************************************************//
 
-bool search(p_tree t , float element , int* nmb_knots){
+bool search(p_tree t , float element , int* nmb_nodes){
 
     bool is_in = false;
 
@@ -374,21 +370,21 @@ bool search(p_tree t , float element , int* nmb_knots){
     }
 
     else if(t -> element == element){
-        *nmb_knots += 1;
+        *nmb_nodes += 1;
         is_in = true;
     }
 
     else if(t -> element > element){
-        *nmb_knots += 1;
+        *nmb_nodes += 1;
         if(has_left_son(t)){
-            return search(t -> left_son , element , nmb_knots);
+            return search(t -> left_son , element , nmb_nodes);
         }
     }
 
     else if(t -> element < element){
-        *nmb_knots += 1;
+        *nmb_nodes += 1;
         if(has_right_son(t)){
-            return search(t -> right_son , element , nmb_knots);
+            return search(t -> right_son , element , nmb_nodes);
         }
     }
     return is_in;
@@ -499,11 +495,11 @@ p_tree make_ABR_with_tab(p_tree t , float* tab , int size){
     return t;
 }
 
-p_tree convert_to_ABR(p_tree t , int nmb_knots){
+p_tree convert_to_ABR(p_tree t , int nmb_nodes){
 
     p_tree p = NULL;
     
-    float* tab = malloc(nmb_knots * sizeof(int));
+    float* tab = malloc(nmb_nodes * sizeof(int));
     if (tab == NULL){
         exit(1);
     }
@@ -523,7 +519,7 @@ p_tree convert_to_ABR(p_tree t , int nmb_knots){
     else{
         make_tab_with_Tree(t , tab , &range);
         
-        for (int i = 0 ; i < nmb_knots ; i++){
+        for (int i = 0 ; i < nmb_nodes ; i++){
            p = insert_ABR(p , tab[i]); 
         }
 
@@ -531,7 +527,7 @@ p_tree convert_to_ABR(p_tree t , int nmb_knots){
     }
 }
 
-void sort_tab_with_tree(float* tab , int* nmb_knots , p_tree t){
+void sort_tab_with_tree(float* tab , int* nmb_nodes , p_tree t){
     if (t == NULL){
         printf("ERROR");
         exit(1);
@@ -540,14 +536,14 @@ void sort_tab_with_tree(float* tab , int* nmb_knots , p_tree t){
     else{
 
         if(has_left_son(t)){
-            sort_tab_with_tree(tab , nmb_knots , t -> left_son);
+            sort_tab_with_tree(tab , nmb_nodes , t -> left_son);
         }
 
-        *(tab + *nmb_knots) = t -> element;
-        *nmb_knots += 1;
+        *(tab + *nmb_nodes) = t -> element;
+        *nmb_nodes += 1;
 
         if(has_right_son(t)){
-            sort_tab_with_tree(tab , nmb_knots , t -> right_son);
+            sort_tab_with_tree(tab , nmb_nodes , t -> right_son);
         }
     }
 }
@@ -583,7 +579,6 @@ p_tree left_rotation(p_tree t){
     pivot -> equilibre = get_balance_factor(pivot);
     
     return pivot;
-
 }
 
 p_tree right_rotation(p_tree t){

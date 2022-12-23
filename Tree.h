@@ -27,21 +27,19 @@ int Min(int a , int b , int c);
 //******************************************************//
 p_tree create_tree(float element);
 
-p_tree edit_tree(p_tree t , int n);
-
 int max(int a , int b);
 
 bool is_empty(p_tree t);
 
-bool is_sheet(p_tree t);
+bool is_leaf(p_tree t);
 
-int nmb_sheet(p_tree t);
+int nmb_leaf(p_tree t);
 
 int get_element(p_tree t);
 
 int get_height(p_tree a);
 
-int nmb_knots(p_tree t);
+int nmb_nodes(p_tree t);
 
 bool has_left_son(p_tree t);
 
@@ -71,7 +69,7 @@ void make_tab_with_Tree(p_tree t , float* tab , int* range);
 //***********************   BINARY SEARCH TREE   *********************//
 //********************************************************************//
 
-bool search(p_tree t , float element , int* nmb_knots);
+bool search(p_tree t , float element , int* nmb_nodes);
 
 p_tree insert_ABR(p_tree t , float element);
 
@@ -81,11 +79,11 @@ p_tree remove_min(p_tree t , float* element);
 
 p_tree remove_element_ABR(p_tree t , float element);
 
-p_tree convert_to_ABR(p_tree t , int nmb_knots);
+p_tree convert_to_ABR(p_tree t , int nmb_nodes);
 
 p_tree make_ABR_with_tab(p_tree t , float* tab , int size);
 
-void sort_tab_with_tree(float* tab , int* nmb_knots , p_tree t);
+void sort_tab_with_tree(float* tab , int* nmb_nodes , p_tree t);
 
 //********************************************************************//
 //*******************************   AVL   ****************************//
