@@ -5,7 +5,7 @@
 
 typedef struct Tree Tree;
 struct Tree {
-    float element;
+    double element;
     Tree* left_son;
     Tree* right_son;
     int equilibre;
@@ -45,9 +45,9 @@ bool has_left_son(p_tree t);
 
 bool has_right_son(p_tree t);
 
-bool add_left_son(p_tree t , float element);
+bool add_left_son(p_tree t , double element);
 
-bool add_right_son(p_tree t , float element);
+bool add_right_son(p_tree t , double element);
 
 bool arbre_filiforme(p_tree t);
 
@@ -69,21 +69,21 @@ void make_tab_with_Tree(p_tree t , float* tab , int* range);
 //***********************   BINARY SEARCH TREE   *********************//
 //********************************************************************//
 
-bool search(p_tree t , float element , int* nmb_nodes);
+bool search(p_tree t , double element , int* nmb_nodes);
 
-p_tree insert_ABR(p_tree t , float element);
+p_tree insert_ABR(p_tree t , double element);
 
 bool is_ABR(p_tree t);
 
-p_tree remove_min(p_tree t , float* element);
+p_tree remove_min(p_tree t , double* element);
 
-p_tree remove_element_ABR(p_tree t , float element);
+p_tree remove_element_ABR(p_tree t , double element);
 
 p_tree convert_to_ABR(p_tree t , int nmb_nodes);
 
-p_tree make_ABR_with_tab(p_tree t , float* tab , int size);
+p_tree make_ABR_with_tab(p_tree t , double* tab , int size);
 
-void sort_tab_with_tree(float* tab , int* nmb_nodes , p_tree t);
+void sort_tab_with_tree(double* tab , int* nmb_nodes , p_tree t);
 
 //********************************************************************//
 //*******************************   AVL   ****************************//
@@ -93,11 +93,11 @@ void print_AVL(p_tree t , int j);
 
 int get_balance_factor(p_tree t);
 
-p_tree insert_AVL(p_tree t , float element);
+p_tree insert_AVL(p_tree t , double element);
 
-p_tree remove_min_AVL(p_tree t , float* element , int* h);
+p_tree remove_min_AVL(p_tree t , double* element);
 
-p_tree remove_element_AVL(p_tree t , float element , int* h);
+p_tree remove_element_AVL(p_tree t , double element);
 
 p_tree left_rotation(p_tree t);
 

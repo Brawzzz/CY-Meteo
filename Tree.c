@@ -141,7 +141,7 @@ int get_height(p_tree t){
     }
 }
 
-bool add_left_son(p_tree t , float element){
+bool add_left_son(p_tree t , double element){
 
     if(is_empty(t)){
         t = create_tree(element);
@@ -158,7 +158,7 @@ bool add_left_son(p_tree t , float element){
     }
 }
 
-bool add_right_son(p_tree t , float element){
+bool add_right_son(p_tree t , double element){
 
     if(is_empty(t)){
         t = create_tree(element);
@@ -263,7 +263,7 @@ void pre_fixe_search(p_tree t , FILE* file){
 
     else{
 
-        fprintf(file , "%f\n" , t -> element);
+        fprintf(file , "%lf\n" , t -> element);
 
         if(has_left_son(t)){
             pre_fixe_search(t -> left_son , file);
@@ -288,7 +288,7 @@ void in_fixe_search(p_tree t , FILE* file){
             in_fixe_search(t -> left_son , file);
         }
 
-        fprintf(file , "%f\n" , t -> element);
+        fprintf(file , "%lf\n" , t -> element);
 
         if(has_right_son(t)){
             in_fixe_search(t -> right_son , file);
@@ -313,7 +313,7 @@ void post_fixe_search(p_tree t , FILE* file){
             post_fixe_search(t -> right_son , file);
         }
 
-        fprintf(file , "%f\n" , t -> element);
+        fprintf(file , "%lf\n" , t -> element);
     }
 }
 
@@ -360,7 +360,7 @@ bool arbre_filiforme(p_tree t){
 //**********************************************                         **********************************************//
 //*********************************************************************************************************************//
 
-bool search(p_tree t , float element , int* nmb_nodes){
+bool search(p_tree t , double element , int* nmb_nodes){
 
     bool is_in = false;
 
@@ -390,7 +390,7 @@ bool search(p_tree t , float element , int* nmb_nodes){
     return is_in;
 }
 
-p_tree insert_ABR(p_tree t , float element){
+p_tree insert_ABR(p_tree t , double element){
 
     if (t == NULL){
         t = create_tree(element);
@@ -408,7 +408,7 @@ p_tree insert_ABR(p_tree t , float element){
     return t;
 }
 
-p_tree remove_min(p_tree t , float* element){
+p_tree remove_min(p_tree t , double* element){
 
     p_tree p;
 
@@ -426,7 +426,7 @@ p_tree remove_min(p_tree t , float* element){
     return t;
 }
 
-p_tree remove_element_ABR(p_tree t , float element){
+p_tree remove_element_ABR(p_tree t , double element){
     
     if(t == NULL){
         return t;
@@ -487,7 +487,7 @@ bool is_ABR(p_tree t){
     }
 }
 
-p_tree make_ABR_with_tab(p_tree t , float* tab , int size){
+p_tree make_ABR_with_tab(p_tree t , double* tab , int size){
 
     for (int i = 0 ; i < size-1 ; i++){
         t = insert_ABR(t , tab[i]);
@@ -527,7 +527,7 @@ p_tree convert_to_ABR(p_tree t , int nmb_nodes){
     }
 }
 
-void sort_tab_with_tree(float* tab , int* nmb_nodes , p_tree t){
+void sort_tab_with_tree(double* tab , int* nmb_nodes , p_tree t){
     if (t == NULL){
         printf("ERROR");
         exit(1);
@@ -635,22 +635,22 @@ p_tree balance_AVL(p_tree t){
     }
 }
 
-p_tree insert_AVL(p_tree t , float key) {
+p_tree insert_AVL(p_tree t , double element) {
     // Si l'arbre est vide, retourne une nouvelle node
     if (t == NULL) {
-        return create_tree(key);
+        return create_tree(element);
     }
  
     // Si la clé à insérer est inférieure à la clé de la racine,
     // insère la nouvelle node dans le sous-arbre gauche
-    if (key <= t -> element) {
-        t -> left_son = insert_AVL(t -> left_son , key);
+    if (element <= t -> element) {
+        t -> left_son = insert_AVL(t -> left_son , element);
     }
  
     // Si la clé à insérer est supérieure à la clé de la racine,
     // insère la nouvelle node dans le sous-arbre droit
-    else if (key > t -> element) {
-        t -> right_son = insert_AVL(t -> right_son , key);
+    else if (element > t -> element) {
+        t -> right_son = insert_AVL(t -> right_son , element);
     }
  
     // Calcul de l'équilibre de la racine
@@ -662,77 +662,54 @@ p_tree insert_AVL(p_tree t , float key) {
     return t;
 }
 
-p_tree remove_min_AVL(p_tree t , float* p_element , int* h){
+p_tree remove_min_AVL(p_tree t , double* p_element){
 
-    p_tree tmp = NULL;
-
-    if(t -> left_son != NULL){
-        t -> left_son = remove_min_AVL(t -> left_son , p_element , h);
-        *h = -*h;
+    if(has_left_son(t)){
+        t -> left_son = remove_min_AVL(t -> left_son , p_element);
     }
 
     else{
+        p_tree p = NULL;
         *p_element = t -> element;
-        *h = -1;
-        tmp = t;
+        p = t;
         t = t -> right_son;
-        free(tmp);
-        tmp = NULL;
-        return t;
+        free(p);
     }
 
-    if(*h != 0){
-        t -> equilibre = t -> equilibre + *h;
-        if(t -> equilibre == 0){
-            *h = -1;
-        }
-        else{
-            *h = 0;
-        }
-    }
     return t;
 }
 
-p_tree remove_element_AVL(p_tree t , float element , int* h){
-
-    p_tree tmp;
+p_tree remove_element_AVL(p_tree t , double element){
 
     if(t == NULL){
         return t;
     }
 
     else if (element > t -> element){
-        t -> right_son = remove_element_AVL(t -> right_son , element , h);
-        *h = 1;
+        t -> right_son = remove_element_AVL(t -> right_son , element);
     }
 
     else if (element < t -> element){
-        t -> left_son = remove_element_AVL(t -> left_son , element , h);
-        *h = -1;
+        t -> left_son = remove_element_AVL(t -> left_son , element);
     }
 
     else if(has_right_son(t)){
-        t -> right_son = remove_min_AVL(t -> right_son , &(t -> element) , h);
+        t -> right_son = remove_min_AVL(t -> right_son , &(t -> element));    
     }
 
     else{
-        tmp = t;
+        p_tree tmp = t;
         t = t -> left_son;
         free(tmp);
-        *h = -1; 
+        tmp = NULL;
+        return t;
     }
 
-    if(*h != 0){
-        t -> equilibre = t -> equilibre + *h;
-        if (t -> equilibre == 0){
-            *h = -1;
-        }
-        else{
-            *h = 0;
-        }
-    }
+    int balance = get_balance_factor(t);
+    t -> equilibre = balance;
+    t = balance_AVL(t);
 
-    return t; 
+    return t;
 }
 
 void print_AVL(p_tree t , int space){
