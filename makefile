@@ -4,8 +4,17 @@ OBJ = $(SRC :.c = .o)
 
 all : sort
 
+Coordinates.o : Coordinates.c
+	$(CC) -c $< -o $@
+
+Data_Set.o : Data_Set.c
+	$(CC) -c $< -o $@
+
 Tree.o : Tree.c
 	$(CC) -c $< -o $@
 	
-sort : sort.o Tree.o 
+sort.o : sort.c
+	$(CC) -c $< -o $@
+
+sort : Coordinates.o Data_Set.o Tree.o sort.o 
 	$(CC) $^ -o $@
