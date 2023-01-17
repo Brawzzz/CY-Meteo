@@ -267,7 +267,7 @@ for filter in "${filters[@]}"; do
 	case $filter in
 		-t1|-t2|-t3)
 			if [[ ! -f $filename ]] ; then
-				cut -d ";" -f 1,2,11,12,13 $result_file | grep ";;;$" -v > $filename
+				cut -d ";" -f 1,2,11,10 $result_file | grep ";;;$" -v > $filename
 			fi
 		;;
 		-p1|-p2|-p3)
@@ -279,10 +279,10 @@ for filter in "${filters[@]}"; do
 			cut -d ";" -f 1,2,4,5 $result_file | grep ";;$" -v > $filename
 		;;
 		-h)
-			cut -d ";" -f 1,2,14 $result_file > $filename
+			cut -d ";" -f 1,2,14,10 $result_file > $filename
 		;;
 		-m)
-			cut -d ";" -f 1,2,6 $result_file | grep ";$" -v > $filename
+			cut -d ";" -f 1,2,6,10 $result_file | grep ";$" -v > $filename
 		;;
 	esac
 

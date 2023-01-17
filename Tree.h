@@ -1,13 +1,11 @@
 #ifndef TREE_H
 #define TREE_H
 
-#include<stdbool.h>
-
-#include "Data_Set.h"
+#include "tools.h"
 
 typedef struct Tree Tree;
 struct Tree {
-    Data_Set* element; // changer en void*
+    Data_Set* element;
     Tree* left_son;
     Tree* right_son;
     int equilibre;
@@ -30,9 +28,15 @@ int get_height(p_tree t);
 
 int nmb_nodes(p_tree t);
 
-void in_fixe_search(p_tree t , FILE* file);
+void in_fixe_search(p_tree t , FILE* file , int mode);
 
-void reverse_in_fixe_search(p_tree t , FILE* file);
+void reverse_in_fixe_search(p_tree t , FILE* file , int mode);
+
+bool search_by_id(p_tree t , Data_Set* element);
+
+bool search_by_date(p_tree t , Data_Set* element , int* nmb_knots);
+
+bool binary_search_tree_date(p_tree array[] , int size , char* value , int* index);
 
 int get_balance_factor(p_tree t);
 
@@ -46,15 +50,15 @@ p_tree double_left_rotation(p_tree t);
 
 p_tree double_right_rotation(p_tree t);
 
-p_tree insert_AVL_by_ID(p_tree t , Data_Set* element);
+p_tree add_AVL(p_tree t , Data_Set* x, int *h);
 
-p_tree insert_AVL_by_min(p_tree t , Data_Set* element);
+p_tree insert_AVL_by_ID(p_tree t , Data_Set* element , int mode);
+
+p_tree insert_AVL_by_date(p_tree t , Data_Set* element);
 
 p_tree insert_AVL_by_max(p_tree t , Data_Set* element);
 
-p_tree insert_AVL_by_average(p_tree t , Data_Set* element);
-
-p_tree insert_AVL_by_date(p_tree t , Data_Set* element);
+void insert_AVL_by_max_from_id(p_tree t1 , p_tree* t2);
 
 void print_AVL(p_tree t , int space);
 
