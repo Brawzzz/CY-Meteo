@@ -16,5 +16,5 @@ Tree.o : Tree.c
 sort.o : sort.c
 	$(CC) -c $< -o $@
 
-sort : tools.o Data_Set.o Tree.o sort.o 
+sort : tools.o Data_Set.o Tree.o sort.o -lm
 	$(CC) $^ -o $@
