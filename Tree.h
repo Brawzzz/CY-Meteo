@@ -14,6 +14,10 @@ struct Tree {
 
 typedef Tree* p_tree;
 
+//******************************************************/
+//***********************   TREE   *********************//
+//******************************************************//
+
 p_tree create_tree(Data_Set* element);
 
 bool is_leaf(p_tree t);
@@ -37,6 +41,24 @@ bool search_by_id(p_tree t , Data_Set* element);
 bool search_by_date(p_tree t , Data_Set* element , int* nmb_knots);
 
 bool binary_search_tree_date(p_tree array[] , int size , char* value , int* index);
+
+//********************************************************************/
+//***********************   BINARY SEARCH TREE   *********************//
+//********************************************************************//
+
+p_tree insert_ABR_by_ID(p_tree t , Data_Set* element , int mode);
+
+p_tree insert_ABR_by_date(p_tree t , Data_Set* element);
+
+p_tree insert_ABR_by_max(p_tree t , Data_Set* element);
+
+void insert_ABR_by_max_from_id(p_tree t1 , p_tree* t2);
+
+void print_ABR(p_tree t , int space);
+
+//********************************************************************/
+//*******************************   AVL   ****************************//
+//********************************************************************//
 
 int get_balance_factor(p_tree t);
 
