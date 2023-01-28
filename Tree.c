@@ -125,7 +125,7 @@ int get_height(p_tree t){
 }
 
 // In fix saerch function by increasing order
-void in_fixe_search(p_tree t , FILE* file , int mode){
+void in_fixe_search(p_tree t , FILE* file , int mode , int* c){
 
     if (t == NULL){
         printf("\n");
@@ -134,41 +134,44 @@ void in_fixe_search(p_tree t , FILE* file , int mode){
 
         if (mode == 0){
             if(has_left_son(t)){
-                in_fixe_search(t -> left_son , file , mode);
+                in_fixe_search(t -> left_son , file , mode , c);
             }
             
             if((t -> element) -> pass == 1){
-                fprintf(file , "%d,%s,%lf\n", (t -> element) -> id , (t -> element) -> date , (t -> element) -> data);
+                fprintf(file , "%d,%d,%s,%lf\n", *c , (t -> element) -> id , (t -> element) -> date , (t -> element) -> data);
+                *c += 1;
             }
 
             if(has_right_son(t)){
-                in_fixe_search(t -> right_son , file , mode);
+                in_fixe_search(t -> right_son , file , mode , c);
             }
         }
         else if(mode == 1){
             if(has_left_son(t)){
-                in_fixe_search(t -> left_son , file , mode);
+                in_fixe_search(t -> left_son , file , mode , c);
             }
 
             if((t -> element) -> pass == 1){
-                fprintf(file , "%d,%s,%lf,%lf,%lf,%lf,%lf\n", (t -> element) -> id , (t -> element) -> date , (t -> element) -> min , (t -> element) -> max , (t -> element) -> average , (t -> element) -> x , (t -> element) -> y);
+                fprintf(file , "%d,%d,%s,%lf,%lf,%lf,%lf,%lf\n", *c , (t -> element) -> id , (t -> element) -> date , (t -> element) -> min , (t -> element) -> max , (t -> element) -> average , (t -> element) -> x , (t -> element) -> y);
+                *c += 1;
             }
 
             if(has_right_son(t)){
-                in_fixe_search(t -> right_son , file , mode);
+                in_fixe_search(t -> right_son , file , mode , c);
             }  
         }
         else if(mode == 2){
             if(has_left_son(t)){
-                in_fixe_search(t -> left_son , file , mode);
+                in_fixe_search(t -> left_son , file , mode , c);
             }
 
             if((t -> element) -> pass == 1){
-                fprintf(file , "%d,%lf,%lf,%lf,%lf\n", (t -> element) -> id , (t -> element) -> average , (t -> element) -> average_1 , (t -> element) -> x , (t -> element) -> y);
+                fprintf(file , "%d,%d,%lf,%lf,%lf,%lf\n", *c , (t -> element) -> id , (t -> element) -> average , (t -> element) -> average_1 , (t -> element) -> x , (t -> element) -> y);
+                *c += 1;
             }
 
             if(has_right_son(t)){
-                in_fixe_search(t -> right_son , file , mode);
+                in_fixe_search(t -> right_son , file , mode , c);
             }
         }
     }
@@ -270,7 +273,9 @@ bool search_by_date(p_tree t , Data_Set* element , int* nmb_knots){
     return is_in;
 }
 
-// Binary search algorithme for date (for a tab of p_tree)
+// Binary search algorithme for date
+// Search a date in for a tab of p_tree
+// and return the index of the index
 bool binary_search_tree_date(p_tree array[] , int size , char* value , int* index) {
     int low = 0;
     int high = size - 1;
@@ -303,17 +308,13 @@ p_tree insert_ABR_by_ID(p_tree t , Data_Set* element , int mode){
         (t -> element) -> pass = 1; 
         return t;
     }
-
     else if ( get_element(t) -> id > element -> id){
         t -> left_son = insert_ABR_by_ID(t -> left_son , element , mode);
     }
-
     else  if (get_element(t) -> id < element -> id ){
         t -> right_son = insert_ABR_by_ID(t -> right_son , element , mode);
     }
-
     else{
-
         if(mode == 0){
             // Compute the max
             if((t -> element) -> max < element -> data){
@@ -352,6 +353,10 @@ p_tree insert_ABR_by_ID(p_tree t , Data_Set* element , int mode){
 
             return t;
         } 
+        else{
+            t -> right_son = insert_ABR_by_ID(t -> right_son , element , mode);
+
+        }
     }
     return t;
 }
@@ -360,7 +365,7 @@ p_tree insert_ABR_by_date(p_tree t , Data_Set* element){
 
     if (is_empty(t)){
         t = create_tree(element);
-        (t -> element) -> pass = 0;
+        (t -> element) -> pass = 1;
         return t;
     }
     else if (strcmp((t -> element) -> date , element -> date) > 0){
@@ -370,10 +375,10 @@ p_tree insert_ABR_by_date(p_tree t , Data_Set* element){
         t -> right_son = insert_ABR_by_date(t -> right_son , element);
     }
     else{
-        // // Compute the average
-        // (t -> element) -> nmb_data += 1;
-        // (t -> element) -> sum += element -> data; 
-        // (t -> element) -> average = ((t -> element) -> sum) / ((t -> element) -> nmb_data);
+        // Compute the average
+        (t -> element) -> nmb_data += 1;
+        (t -> element) -> sum += element -> data; 
+        (t -> element) -> average = ((t -> element) -> sum) / ((t -> element) -> nmb_data);
         return t;
     }
     return t;
@@ -476,38 +481,40 @@ int get_balance_factor(p_tree t){
 
 // Left rotation operation
 p_tree left_rotation(p_tree t){
-
-    p_tree pivot = t -> right_son;
-    p_tree x = pivot -> left_son;
-
-    pivot -> left_son = t;
-    t -> right_son = x;
-
-    t -> height = get_height(t);
-    pivot -> height = get_height(pivot);
-
-    t -> equilibre = get_balance_factor(pivot);
-    pivot -> equilibre = get_balance_factor(pivot);
+    p_tree pivot = NULL;
+    int eq_t = 0;
+    int eq_p = 0;
     
-    return pivot;
+    pivot = t -> right_son;
+    t -> right_son = pivot -> left_son;
+    pivot -> left_son = t;
+
+    eq_t = t -> equilibre;
+    eq_p = pivot -> equilibre;
+    (t -> equilibre) = eq_t - max(pivot -> equilibre , 0) - 1;
+    (pivot -> equilibre) = Min(eq_t - 2 , eq_t + eq_p - 2 , eq_p - 1);
+
+    t = pivot;
+    return t;
 }
 
 // Right rotation operation
 p_tree right_rotation(p_tree t){
-    
-    p_tree pivot = t -> left_son;
-    p_tree x = pivot -> right_son;
+    p_tree pivot = NULL;
+    int eq_t = 0;
+    int eq_p = 0;
 
+    pivot = t -> left_son;
+    t -> left_son = pivot -> right_son;
     pivot -> right_son = t;
-    t -> left_son = x;
 
-    t -> height = get_height(t);
-    pivot -> height = get_height(pivot);
+    eq_t = t -> equilibre;
+    eq_p = pivot -> equilibre;
+    (t -> equilibre) = eq_t - min(eq_p , 0) + 1;
+    (pivot -> equilibre) = Max(eq_t + 2 , eq_t + eq_p + 2 , eq_p + 1); 
 
-    t -> equilibre = get_balance_factor(pivot);
-    pivot -> equilibre = get_balance_factor(pivot);
-
-    return pivot;
+    t = pivot;
+    return t;
 }
 
 // Double left rotation operation
@@ -526,7 +533,7 @@ p_tree double_right_rotation(p_tree t){
 p_tree balance_AVL(p_tree t){
 
     if(t -> equilibre >= 2){
-        if((t -> right_son) -> equilibre >= 0){
+        if(((t -> right_son) -> equilibre) >= 0){
             return left_rotation(t);
         }
         else{
@@ -534,7 +541,7 @@ p_tree balance_AVL(p_tree t){
         }
     }
     else if (t -> equilibre <= -2){
-        if((t -> left_son) -> equilibre <= 0){
+        if(((t -> left_son) -> equilibre) <= 0){
             return right_rotation(t);
         }
         else{
@@ -546,24 +553,25 @@ p_tree balance_AVL(p_tree t){
     }
 }
 
-// Insert a new nodes by id
-p_tree insert_AVL_by_ID(p_tree t , Data_Set* element , int mode){
+// Insert a new node by id
+p_tree insert_AVL_by_ID(p_tree t , Data_Set* element , int* h , int mode){
 
     if (t == NULL){
+        *h = 1;
         t = create_tree(element);
-        (t -> element) -> pass = 1; 
+        ((t -> element) -> pass) = 1; 
         return t;
     }
-
-    else if ( get_element(t) -> id > element -> id){
-        t -> left_son = insert_AVL_by_ID(t -> left_son , element , mode);
+    else if ((t -> element) -> id > element -> id){
+        t -> left_son = insert_AVL_by_ID(t -> left_son , element , h , mode);
+        *h = -*h;
     }
-
-    else  if (get_element(t) -> id < element -> id ){
-        t -> right_son = insert_AVL_by_ID(t -> right_son , element , mode);
+    else  if ((t -> element) -> id < element -> id ){
+        t -> right_son = insert_AVL_by_ID(t -> right_son , element , h , mode);
     }
-
     else{
+        *h = 0;
+        ((t -> element) -> pass) = 1;
 
         if(mode == 0){
             // Compute the max
@@ -603,78 +611,60 @@ p_tree insert_AVL_by_ID(p_tree t , Data_Set* element , int mode){
 
             return t;
         } 
+        else{
+            t -> right_son = insert_AVL_by_ID(t -> right_son , element , h , mode);
+        }
     }
 
-    int balance = get_balance_factor(t);
-    t -> equilibre = balance;
-
-    t = balance_AVL(t);
-
+    if(*h != 0){
+        t -> equilibre += *h;
+        t = balance_AVL(t);
+        if(t -> equilibre == 0){
+            *h = 0;
+        }
+        else{
+            *h = 1;
+        }
+    }
     return t;
 }
 
 // Insert a new nodes by date
-p_tree insert_AVL_by_date(p_tree t , Data_Set* element){
+p_tree insert_AVL_by_date(p_tree t , Data_Set* element , int* h){
 
-    if (is_empty(t)){
+    if (t == NULL){
+        *h = 1;
         t = create_tree(element);
-        (t -> element) -> pass = 0;
+        (t -> element) -> pass = 1;
         return t;
     }
-
     else if (strcmp((t -> element) -> date , element -> date) > 0){
-        t -> left_son = insert_AVL_by_date(t -> left_son , element);
+        t -> left_son = insert_AVL_by_date(t -> left_son , element , h);
+        *h = -*h;
     }
-
     else  if (strcmp((t -> element) -> date , element -> date) < 0){
-        t -> right_son = insert_AVL_by_date(t -> right_son , element);
+        t -> right_son = insert_AVL_by_date(t -> right_son , element , h);
     }
-
     else{
-        // // Compute the average
-        // (t -> element) -> nmb_data += 1;
-        // (t -> element) -> sum += element -> data; 
-        // (t -> element) -> average = ((t -> element) -> sum) / ((t -> element) -> nmb_data);
+        *h = 0;
+        // Compute the average
+        (t -> element) -> nmb_data += 1;
+        (t -> element) -> sum += element -> data; 
+        (t -> element) -> average = ((t -> element) -> sum) / ((t -> element) -> nmb_data);
         return t;
     }
 
-    int balance = get_balance_factor(t);
-    t -> equilibre = balance;
-
-    t = balance_AVL(t);
-
-    return t;
-}
-
-p_tree add_AVL(p_tree t , Data_Set* x , int *h) {
-	if (t == NULL) {
-		*h = 1;
-        t = create_tree(x);
-		return t;
-	}
-
-	else if (strcmp(x -> date , (t -> element) -> date) < 0){
-		t -> right_son = add_AVL(t -> right_son , x , h);
-    }
-	else if ((x -> date , (t -> element) -> date) > 0) {
-		t -> left_son = add_AVL(t -> left_son , x , h);
-		*h = -*h;
-	} 
-    else { 
-		*h = 0;
-		return t;
-	}
-	if (*h != 0) {
-		t -> equilibre = (t -> equilibre) + *h;
-		t = balance_AVL(t);
-		if (t -> equilibre == 0){
-			*h = 0;
+    if(*h != 0){
+        t -> equilibre += *h;
+        t = balance_AVL(t);
+        if(t -> equilibre == 0){
+            *h = 0;
         }
-		else{
-			*h = 1;
+        else{
+            *h = 1;
         }
-	}
-	return t;
+    }   
+    return t;    
 }
 
 // Insert a new nodes by max
@@ -757,3 +747,24 @@ void print_AVL(p_tree t , int space){
         space = 0;
     }
 }
+
+void fixe_search(p_tree t , FILE* file){
+
+    if (t == NULL){
+        printf("\n");
+    }
+    else{
+        if(has_left_son(t)){
+            fixe_search(t -> left_son , file);
+        }
+        
+        if((t -> element) -> pass == 0){
+            fprintf(file , "%d , %d\n", (t -> element) -> pass , (t -> element) -> id );
+        }
+
+        if(has_right_son(t)){
+            fixe_search(t -> right_son , file);
+        }
+    }
+}
+  

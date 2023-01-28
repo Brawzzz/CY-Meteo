@@ -32,7 +32,7 @@ int get_height(p_tree t);
 
 int nmb_nodes(p_tree t);
 
-void in_fixe_search(p_tree t , FILE* file , int mode);
+void in_fixe_search(p_tree t , FILE* file , int mode , int* c);
 
 void reverse_in_fixe_search(p_tree t , FILE* file , int mode);
 
@@ -72,18 +72,17 @@ p_tree double_left_rotation(p_tree t);
 
 p_tree double_right_rotation(p_tree t);
 
-p_tree add_AVL(p_tree t , Data_Set* x, int *h);
+// p_tree add_AVL(p_tree t , Data_Set* x, int *h);
 
-p_tree insert_AVL_by_ID(p_tree t , Data_Set* element , int mode);
+p_tree insert_AVL_by_ID(p_tree t , Data_Set* element , int* h , int mode);
 
-p_tree insert_AVL_by_date(p_tree t , Data_Set* element);
+p_tree insert_AVL_by_date(p_tree t , Data_Set* element , int* h);
 
 p_tree insert_AVL_by_max(p_tree t , Data_Set* element);
 
 void insert_AVL_by_max_from_id(p_tree t1 , p_tree* t2);
 
 void print_AVL(p_tree t , int space);
-
 /*
 
 int max(int a , int b);

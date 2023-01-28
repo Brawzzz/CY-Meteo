@@ -137,8 +137,9 @@ if [[ ! -z $zone ]] ; then
 	if [[ -f $out_file ]] ; then 
 		in_file=$out_file; 
 	else 
-		in_file="meteo_filtered_data_v1.csv"
+		in_file="$file"
 	fi
+
 	# Keep the header
 	head $in_file -n 1 > $tmp_out_file
 	# Check coordinates to keep only the ones in the zone
@@ -189,7 +190,7 @@ if [[ ! -z $long_min || ! -z $lat_min ]] ; then
 	if [[ -f $out_file ]] ; then 
 		in_file=$out_file
 	else 
-		in_file="meteo_filtered_data_v1.csv"
+		in_file="$file"
 	fi
 	# Keep the header
 	head $in_file -n 1 > $tmp_out_file
@@ -211,7 +212,7 @@ if [[ ! -z $date_min && ! -z $date_max ]] ; then
 	if [[ -f $out_file ]] ; then 
 		in_file=$out_file
 	else 
-		in_file="meteo_filtered_data_v1.csv"
+		in_file="$file"
 	fi
 	# Keep the header
 	head $in_file -n 1 > $tmp_out_file
@@ -224,12 +225,11 @@ if [[ ! -z $date_min && ! -z $date_max ]] ; then
 	echo
 fi
 
-
 # Write result into the final file
 if [[ -f $out_file ]] ; then 
 	mv $out_file $result_file
 else
-	result_file="meteo_filtered_data_v1.csv"
+	result_file=$file
 fi
 
 # Test presence of C programm compiled
@@ -272,50 +272,54 @@ for filter in "${filters[@]}"; do
 		;;
 		-p1|-p2|-p3)
 			if [[ ! -f $filename ]] ; then
-				cut -d ";" -f 1,2,7,8 $result_file | grep ";;$" -v > $filename
+				cut -d ";" -f 1,2,7,10 $result_file | grep ";;$" -v > "temp_p.csv"
+				awk -F ";" '{print $1 ";" $2 ";" $4 ";" $3}' "temp_p.csv" > $filename
+				rm "temp_p.csv"
 			fi
 		;;
 		-w)
-			cut -d ";" -f 1,2,4,5 $result_file | grep ";;$" -v > $filename
+			cut -d ";" -f 1,2,4,5,10 $result_file | grep ";;$" -v > $filename
 		;;
 		-h)
 			cut -d ";" -f 1,2,14,10 $result_file > $filename
 		;;
 		-m)
-			cut -d ";" -f 1,2,6,10 $result_file | grep ";$" -v > $filename
+			cut -d ";" -f 1,2,6,10 $result_file | grep ";$" -v > "temp_m.csv"
+			awk -F ";" '{print $1 ";" $2 ";" $4 ";" $3}' "temp_m.csv" > $filename
+			rm "temp_m.csv"
 		;;
 	esac
 
 	#output_c=$(./$c_name -f $filename -o result$nb_filter.csv $filter $sorting 2>&1)
-	success=$?
-	if [[ $success -ne 0 ]] ; then
-		echo "Error while applying filter $filter in the C executable '$output_c'" >&2
-		# Check error code to determine the error
-		case $success in
-			1)
-				echo "Options error" >&2
-			;;
-			2)
-				echo "Input file error" >&2
-			;;
-			3)
-				echo "Output file error" >&2
-			;;
-			4)
-				echo "Internal error" >&2
-			;;
-			126)
-				echo "Permission problem (try 'chmod +x $c_name')" >&2
-			;;
-			127)
-				echo "C executable not found (verify that '$c_name' is the correct name)" >&2
-			;;
-			*)
-				echo "Unknown error : $output_c" >&2
-			;;
-		esac
-		exit $success
-	fi
+	# success=$?
+	# if [[ $success -ne 0 ]] ; then
+	# 	echo "Error while applying filter $filter in the C executable '$output_c'" >&2
+	# 	# Check error code to determine the error
+	# 	case $success in
+	# 		1)
+	# 			echo "Options error" >&2
+	# 		;;
+	# 		2)
+	# 			echo "Input file error" >&2
+	# 		;;
+	# 		3)
+	# 			echo "Output file error" >&2
+	# 		;;
+	# 		4)
+	# 			echo "Internal error" >&2
+	# 		;;
+	# 		126)
+	# 			echo "Permission problem (try 'chmod +x $c_name')" >&2
+	# 		;;
+	# 		127)
+	# 			echo "C executable not found (verify that '$c_name' is the correct name)" >&2
+	# 		;;
+	# 		*)
+	# 			echo "Unknown error : $output_c" >&2
+	# 		;;
+	# 	esac
+	# 	exit $success
+	# fi
 	((nb_filter++))
 done
 

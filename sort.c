@@ -35,11 +35,11 @@ int main(int argc, char *argv[]){
     char date[26];
     double data = 0.f;
 
-    double x = 0;
-    double y = 0;
+    double x = 0.f;
+    double y = 0.f;
 
-    double dx = 0;
-    double dy = 0;
+    double dx = 0.f;
+    double dy = 0.f;
 
     double wind_dir = 0.f;
     double wind_speed = 0.f;
@@ -57,6 +57,8 @@ int main(int argc, char *argv[]){
     int mode = 0;
     int i = 0;
     int index = 0;
+    int balance = 0;
+    int count = 0;
 
     //---------------------------- TYPE SORT ----------------------------//
     char* type_sort = NULL;
@@ -209,7 +211,7 @@ int main(int argc, char *argv[]){
                 //------------------------------------- SORT BY ID -------------------------------------//
                 if(ID_option_state == 1){
 
-                    //--------------------------- *-t1/*-p1 min : 1 , max : 1 , average : 1 ---------------------------// 
+                    //--------------------------- *-t1/*-p1 | min : 1 , max : 1 , average : 1 ---------------------------// 
                     if(average_option_state == 1 && minimum_option_state == 1 && maximum_option_state == 1){
                         
                         mode = 1;
@@ -225,10 +227,9 @@ int main(int argc, char *argv[]){
 
                             sscanf(data_line , "%d;%[^;];%lf,%lf;%lf" , &ID , complete_date , &x , &y , &data);
                             data_set = create_data_set(ID , "\0" , data , 0 , 0 , INT_MAX , INT_MIN , x , y);
-                            data_set_tree = insert_AVL_by_ID(data_set_tree , data_set , mode);
+                            data_set_tree = insert_AVL_by_ID(data_set_tree , data_set , &balance , mode);
                         }
                         fclose(input_file);
-
                         end = time(NULL);
 
                         // write the result in a file
@@ -241,7 +242,7 @@ int main(int argc, char *argv[]){
                             reverse_in_fixe_search(data_set_tree , output_file , mode);
                         }
                         else{
-                            in_fixe_search(data_set_tree , output_file , mode);
+                            in_fixe_search(data_set_tree , output_file , mode , &count);
                         }
                         fclose(output_file);
 
@@ -249,7 +250,7 @@ int main(int argc, char *argv[]){
                         data_set_tree = NULL;
                     }
 
-                    //--------------------------- *-w min : 0 , max : 0 , min : 0 , average : 1 ---------------------------// 
+                    //--------------------------- *-w | min : 0 , max : 0 , average : 1 ---------------------------// 
                     else if(average_option_state == 1 && minimum_option_state == 0 && maximum_option_state == 0){
                         
                         mode = 2;
@@ -269,10 +270,9 @@ int main(int argc, char *argv[]){
                             dy = wind_speed * sin((wind_dir * M_PI) / 180);
 
                             data_set = create_data_set(ID , "\0" , data , dx , dy , 0 , 0 , x , y);
-                            data_set_tree = insert_AVL_by_ID(data_set_tree , data_set , mode);
+                            data_set_tree = insert_AVL_by_ID(data_set_tree , data_set , &balance , mode);
                         }
                         fclose(input_file);
-
                         end = time(NULL);
 
                         // write the result in a file
@@ -285,7 +285,7 @@ int main(int argc, char *argv[]){
                             reverse_in_fixe_search(data_set_tree , output_file , mode);
                         }
                         else{
-                            in_fixe_search(data_set_tree , output_file , mode);
+                            in_fixe_search(data_set_tree , output_file , mode , &count);
                         }
                         fclose(output_file);
 
@@ -300,25 +300,11 @@ int main(int argc, char *argv[]){
                 //------------------------------------- SORT BY DATE -------------------------------------// 
                 else if(date_option_state == 1){
 
-                    //--------------------------- *-t2/*-p2 average : 1 ---------------------------//
+                    //--------------------------- *-t2/*-p2 | min : 0 , max : 0 , average : 1 ---------------------------//
                     if(average_option_state == 1 && minimum_option_state == 0 && maximum_option_state == 0){
                         
                         mode = 1;
                         start = time(NULL); 
-
-                        // fill data_set_tree with all the single dates
-                        date_file = fopen(date_filename , "r");
-                        if(date_file == NULL){
-                            error = 2;
-                            exit(error);
-                        } 
-                        // fill data_set_tree with all the single dates
-                        while (fgets(date_line, sizeof(date_line) , date_file) != NULL) {
-                            sscanf(date_line , "%s" , complete_date);
-                            data_set = create_data_set(0 , complete_date , 0 , 0 , 0 , 0 , 0 , 0 , 0);
-                            data_set_tree = insert_AVL_by_date(data_set_tree , data_set);
-                        }
-                        fclose(date_file);
 
                         // start reading the data file and update data_set_tree
                         input_file = fopen(input_filename , "r+");
@@ -330,7 +316,7 @@ int main(int argc, char *argv[]){
 
                             sscanf(data_line , "%d;%[^;];%lf,%lf;%lf" , &ID , complete_date , &x , &y , &data);
                             data_set = create_data_set(0 , complete_date , data , 0 , 0 , 0 , 0 , 0 , 0);
-                            search_by_date(data_set_tree , data_set , &nodes);
+                            data_set_tree = insert_AVL_by_date(data_set_tree , data_set , &balance);
                         }
                         end = time(NULL);
                         fclose(input_file);
@@ -345,16 +331,16 @@ int main(int argc, char *argv[]){
                             reverse_in_fixe_search(data_set_tree , output_file , mode);                        
                         }
                         else{
-                            in_fixe_search(data_set_tree , output_file , mode);                         
+                            in_fixe_search(data_set_tree , output_file , mode , &count);                         
                         }
                         fclose(output_file);
                         free(data_set_tree);
                     }
 
-                    //--------------------------- *-t3/*-p3 no args ---------------------------//
+                    //--------------------------- *-t3/*-p3 | min : 0 , max : 0 , average : 0 ---------------------------//
                     else if(average_option_state == 0 && minimum_option_state == 0 && maximum_option_state == 0){
 
-                        mode = 0;
+                        mode = -1;
                         start = time(NULL);
 
                         // tab of dates allocation
@@ -372,7 +358,7 @@ int main(int argc, char *argv[]){
                             memset(dates_i , 0 , sizeof(dates_i));
                             dates[i] = dates_i;
                         }
-                        // fill a tab with all the single dates
+                        // fill the tab with all the single dates
                         date_file = fopen(date_filename , "r");
                         if(date_file == NULL){
                             error = 2;
@@ -384,15 +370,11 @@ int main(int argc, char *argv[]){
                         }
                         fclose(date_file);
 
-                        // allocates and fill a tab of p_tree with the single dates
+                        // allocates a tab of p_tree
                         tree_tab = malloc(NMB_DATES * sizeof(p_tree));
                         if (tree_tab == NULL){
                             error = 4;
                             exit(error);
-                        }
-                        for (int i = 0 ; i < NMB_DATES ; i++){
-                            data_set = create_data_set(0 , dates[i] , 0 , 0 , 0 , 0 , 0 , 0 , 0);
-                            tree_tab[i] = create_tree(data_set); 
                         }
 
                         // start reading the data file and update tree_tab
@@ -407,12 +389,14 @@ int main(int argc, char *argv[]){
                             data_set = create_data_set(ID , complete_date , data , 0 , 0 , 0 , 0 , 0 , 0);
 
                             // resarch complete_date in the tab of p_tree 
-                            if(binary_search_tree_date(tree_tab , NMB_DATES , complete_date , &index)){
-                                tree_tab[index] = insert_AVL_by_ID(tree_tab[index] , data_set , mode);
+                            if(binary_search_date(dates , NMB_DATES , complete_date , &index)){
+                                tree_tab[index] = insert_AVL_by_ID(tree_tab[index] , data_set , &balance , mode); 
                             }
                         }
-                        end = time(NULL);
                         fclose(input_file);
+                        end = time(NULL);
+
+                        mode = 0;
 
                         // write the result in a file
                         output_file = fopen(output_filename , "w");
@@ -420,6 +404,7 @@ int main(int argc, char *argv[]){
                             error = 3;
                             exit(error);
                         }
+ 
                         if(r_option_state == 1){
                             for (int i = 0 ; i < NMB_DATES ; i++){
                                 reverse_in_fixe_search(tree_tab[i] , output_file , mode);                        
@@ -427,7 +412,7 @@ int main(int argc, char *argv[]){
                         }
                         else{
                             for (int i = 0 ; i < NMB_DATES ; i++){
-                                in_fixe_search(tree_tab[i] , output_file , mode);                        
+                                in_fixe_search(tree_tab[i] , output_file , mode , &count);                        
                             }   
                         }
                         fclose(output_file);
@@ -447,41 +432,43 @@ int main(int argc, char *argv[]){
                         exit(error);
                     }
 
-                    //--------------------------- *-h/*-m max : 1 ---------------------------//
+                    //--------------------------- *-h/*-m | min : 0 , max : 1 , average : 0 ---------------------------//
                     start = time(NULL);
                     if(average_option_state == 0 && minimum_option_state == 0 && maximum_option_state == 1){
 
                         mode = 0;
 
+                        // start reading the data file
                         while (fgets(data_line, sizeof(data_line) , input_file) != NULL) {
 
                             sscanf(data_line , "%d;%[^;];%lf,%lf;%lf;" , &ID , complete_date ,  &x , &y , &data);
                             data_set = create_data_set(ID , "\0" , data , 0 , 0 , 0 , INT_MIN , x , y);
-                            id_tree = insert_AVL_by_ID(id_tree , data_set , mode);
+
+                            // insert data_set by id in order to have the max for each station
+                            id_tree = insert_AVL_by_ID(id_tree , data_set , &balance , mode);
                         }
                         fclose(input_file);
                     }
+                    // make a new tree sorted by max with id_tree
                     insert_AVL_by_max_from_id(id_tree , &data_set_tree);
                     end = time(NULL);
 
                     free(id_tree);
                     id_tree = NULL;
 
+                    // write the result in a file
                     output_file = fopen(output_filename , "w");
                     if(output_file == NULL){
                         error = 3;
                         exit(error);
                     }
-
                     mode = 1;
-
                     if(r_option_state == 1){
                         reverse_in_fixe_search(data_set_tree , output_file , mode);
                     }
                     else{
-                        in_fixe_search(data_set_tree , output_file , mode);
+                        in_fixe_search(data_set_tree , output_file , mode , &count);
                     }
-                  
                     fclose(output_file);
 
                     free(data_set_tree);
@@ -497,7 +484,7 @@ int main(int argc, char *argv[]){
 
                 if(ID_option_state == 1){
 
-                    //--------------------------- *-t1/*-p1 min : 1 , max : 1 , average : 1 ---------------------------// 
+                    //--------------------------- *-t1/*-p1 | min : 1 , max : 1 , average : 1 ---------------------------// 
                     if(average_option_state == 1 && minimum_option_state == 1 && maximum_option_state == 1){
                         
                         mode = 1;
@@ -527,7 +514,7 @@ int main(int argc, char *argv[]){
                             reverse_in_fixe_search(data_set_tree , output_file , mode);
                         }
                         else{
-                            in_fixe_search(data_set_tree , output_file , mode);
+                            in_fixe_search(data_set_tree , output_file , mode , &count);
                         }
                         fclose(output_file);
 
@@ -535,7 +522,7 @@ int main(int argc, char *argv[]){
                         data_set_tree = NULL;
                     }
 
-                    //--------------------------- *-w min : 0 , max : 0 , min : 0 , average : 1 ---------------------------// 
+                    //--------------------------- *-w | min : 0 , max : 0 , average : 1 ---------------------------// 
                     else if(average_option_state == 1 && minimum_option_state == 0 && maximum_option_state == 0){
                         
                         mode = 2;
@@ -571,7 +558,7 @@ int main(int argc, char *argv[]){
                             reverse_in_fixe_search(data_set_tree , output_file , mode);
                         }
                         else{
-                            in_fixe_search(data_set_tree , output_file , mode);
+                            in_fixe_search(data_set_tree , output_file , mode , &count);
                         }
                         fclose(output_file);
 
@@ -586,25 +573,11 @@ int main(int argc, char *argv[]){
                 //------------------------------------- SORT BY DATE -------------------------------------// 
                 else if(date_option_state == 1){
 
-                    //--------------------------- *-t2/*-p2 average : 1 ---------------------------//
+                    //--------------------------- *-t2/*-p2 | min : 0 , max : 0 , average : 1 ---------------------------//
                     if(average_option_state == 1 && minimum_option_state == 0 && maximum_option_state == 0){
                         
                         mode = 1;
                         start = time(NULL); 
-
-                        // fill data_set_tree with all the single dates
-                        date_file = fopen(date_filename , "r");
-                        if(date_file == NULL){
-                            error = 2;
-                            exit(error);
-                        } 
-                        // fill data_set_tree with all the single dates
-                        while (fgets(date_line, sizeof(date_line) , date_file) != NULL) {
-                            sscanf(date_line , "%s" , complete_date);
-                            data_set = create_data_set(0 , complete_date , 0 , 0 , 0 , 0 , 0 , 0 , 0);
-                            data_set_tree = insert_ABR_by_date(data_set_tree , data_set);
-                        }
-                        fclose(date_file);
 
                         // start reading the data file and update data_set_tree
                         input_file = fopen(input_filename , "r+");
@@ -616,7 +589,7 @@ int main(int argc, char *argv[]){
 
                             sscanf(data_line , "%d;%[^;];%lf,%lf;%lf" , &ID , complete_date , &x , &y , &data);
                             data_set = create_data_set(0 , complete_date , data , 0 , 0 , 0 , 0 , 0 , 0);
-                            search_by_date(data_set_tree , data_set , &nodes);
+                            data_set_tree = insert_ABR_by_date(data_set_tree , data_set);
                         }
                         end = time(NULL);
                         fclose(input_file);
@@ -631,16 +604,16 @@ int main(int argc, char *argv[]){
                             reverse_in_fixe_search(data_set_tree , output_file , mode);                        
                         }
                         else{
-                            in_fixe_search(data_set_tree , output_file , mode);                         
+                            in_fixe_search(data_set_tree , output_file , mode , &count);                         
                         }
                         fclose(output_file);
                         free(data_set_tree);
                     }
 
-                    //--------------------------- *-t3/*-p3 no args ---------------------------//
+                    //--------------------------- *-t3/*-p3 | min : 0 , max : 0 , average : 0 ---------------------------//
                     else if(average_option_state == 0 && minimum_option_state == 0 && maximum_option_state == 0){
 
-                        mode = 0;
+                        mode = -1;
                         start = time(NULL);
 
                         // tab of dates allocation
@@ -700,6 +673,7 @@ int main(int argc, char *argv[]){
                         end = time(NULL);
                         fclose(input_file);
 
+                        mode = 0;
                         // write the result in a file
                         output_file = fopen(output_filename , "w");
                         if(output_file == NULL){
@@ -713,7 +687,7 @@ int main(int argc, char *argv[]){
                         }
                         else{
                             for (int i = 0 ; i < NMB_DATES ; i++){
-                                in_fixe_search(tree_tab[i] , output_file , mode);                        
+                                in_fixe_search(tree_tab[i] , output_file , mode , &count);                        
                             }   
                         }
                         fclose(output_file);
@@ -733,7 +707,7 @@ int main(int argc, char *argv[]){
                         exit(error);
                     }
 
-                    //--------------------------- *-h/*-m max : 1 ---------------------------//
+                    //--------------------------- *-h/*-m | min : 0 , max : 1 , average : 0 ---------------------------//
                     start = time(NULL);
                     if(average_option_state == 0 && minimum_option_state == 0 && maximum_option_state == 1){
 
@@ -765,7 +739,7 @@ int main(int argc, char *argv[]){
                         reverse_in_fixe_search(data_set_tree , output_file , mode);
                     }
                     else{
-                        in_fixe_search(data_set_tree , output_file , mode);
+                        in_fixe_search(data_set_tree , output_file , mode , &count);
                     }
                   
                     fclose(output_file);
@@ -787,7 +761,7 @@ int main(int argc, char *argv[]){
                 //------------------------------------- SORT BY ID -------------------------------------//
                 if (ID_option_state == 1){
                     
-                    //--------------------------- *-t1/*-p1 min : 1 , max : 1 , average : 1 ---------------------------// 
+                    //--------------------------- *-t1/*-p1 | min : 1 , max : 1 , average : 1 ---------------------------// 
                     if(average_option_state == 1 && minimum_option_state == 1 && maximum_option_state == 1){
                         
                         start = time(NULL);
@@ -798,7 +772,7 @@ int main(int argc, char *argv[]){
                             error = 4;
                             exit(error);
                         }
-                        // fill dates tab with all the single dates
+                        // fill a tab with all the single id
                         id_file = fopen(id_filename , "r");
                         if(id_file == NULL){
                             error = 2;
@@ -843,6 +817,9 @@ int main(int argc, char *argv[]){
                                 // update the status of tab_data_set[index]
                                 tab_data_set[index] -> pass = 1;
                             }
+                            else{
+                                
+                            }
                         }
                         fclose(input_file);
                         end = time(NULL);
@@ -859,7 +836,7 @@ int main(int argc, char *argv[]){
                         free(tab_data_set);
                     }
 
-                    //--------------------------- *-w min : 0 , max : 0 , average : 1 ---------------------------// 
+                    //--------------------------- *-w | min : 0 , max : 0 , average : 1 ---------------------------// 
                     else if(average_option_state == 1 && minimum_option_state == 0 && maximum_option_state == 0){
                         
                         start = time(NULL);
@@ -939,7 +916,7 @@ int main(int argc, char *argv[]){
                 //------------------------------------- SORT BY DATE -------------------------------------//
                 else if (date_option_state == 1){
 
-                    //--------------------------- *-t2/*-p2 average : 1 ---------------------------// 
+                    //--------------------------- *-t2/*-p2 | min : 0 , max : 0 , average : 1---------------------------// 
                     if(average_option_state == 1 && minimum_option_state == 0 && maximum_option_state == 0){
 
                         start = time(NULL);
@@ -1031,7 +1008,7 @@ int main(int argc, char *argv[]){
                         fclose(output_file);
                     }
 
-                    //--------------------------- *-t3/*-p3 no args ---------------------------//
+                    //--------------------------- *-t3/*-p3 | min : 0 , max : 0 , average : 0 ---------------------------//
                     else if (average_option_state == 0 && minimum_option_state == 0 && maximum_option_state == 0){
 
                         i = 0;
@@ -1081,7 +1058,6 @@ int main(int argc, char *argv[]){
                                 tab_data_set[j] -> pass = 0;
                             }
                             tab[i] = tab_data_set;
-                            // tab[i][0] -> pass = 0;
                         }
 
                         i = 0;
@@ -1140,7 +1116,7 @@ int main(int argc, char *argv[]){
                 //------------------------------------- SORT BY DATA -------------------------------------//
                 else if (data_option_state == 1){
 
-                    //--------------------------- *-h/*-m max : 1 ---------------------------//
+                    //--------------------------- *-h/*-m | min : 0 , max : 1 , average : 0 ---------------------------//
                     if(average_option_state == 0 && minimum_option_state == 0 && maximum_option_state == 1){
 
                         start = time(NULL);
