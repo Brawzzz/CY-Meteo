@@ -439,10 +439,6 @@ for filter in "${filters[@]}"; do
 		;;
 	esac
 
-	if [[ -f $id_coord_file ]] && [[ -f $date_file ]] ; then
-		rm $id_coord_file $date_file $tmp
-	fi
-
 	if [[ $success -ne 0 ]] ; then
 		echo "Error while applying filter $filter in the C executable '$output_c'" >&2
 		# Check error code to determine the error
@@ -473,6 +469,10 @@ for filter in "${filters[@]}"; do
 	fi
 	((nb_filter++))
 done
+
+if [[ -f $id_coord_file ]] && [[ -f $date_file ]] ; then
+	rm $id_coord_file $date_file $tmp
+fi
 
 echo
 echo -e "\033[32mSorting done !\033[0m"
