@@ -11,7 +11,7 @@ case $filter in
 		    	set terminal png
 		    	set output 't1_graph.png'
 		    	set title "Temperature per stations"
-		   	set xlabel "Stations"
+		   		set xlabel "Stations"
 		    	set ylabel "Temperature"
 		    	set datafile separator ","
 		    	set xrange [-1:63]                           
@@ -20,6 +20,7 @@ case $filter in
 		    	set colorbox vertical origin screen 0.9, 0.2 size screen 0.05, 0.6 front  noinvert bdefault
 		    	plot "$file" using 1:8:6:7:xtic(2) with errorbars pt 7 ps 2 
 		EOF
+		echo "DONE"
 	;;
 	t2)
         	echo -n "Computing t2 graph..."
@@ -46,8 +47,8 @@ case $filter in
 		echo -n "Computing t3 graph..."
 		gnuplot <<- EOF
 			reset
-		    	set terminal png
-		    	set output 't3_graph.png'
+		    set terminal png
+		    set output 't3_graph.png'
 			set datafile separator ","                                                        
 			set title "Temperature per dates"                                                  
 			set xlabel "Dates"                                                                
@@ -70,7 +71,7 @@ case $filter in
 		    	set terminal png
 		    	set output 'p1_graph.png'
 		    	set title "Pressure per stations"
-		   	set xlabel "Stations"
+		   		set xlabel "Stations"
 		    	set ylabel "Temperature"
 		    	set datafile separator ","
 		    	set xrange [-1:63]                           
@@ -79,6 +80,7 @@ case $filter in
 		    	set colorbox vertical origin screen 0.9, 0.2 size screen 0.05, 0.6 front  noinvert bdefault
 		    	plot "$file" using 1:8:6:7:xtic(2) with errorbars pt 7 ps 2 
 		EOF
+		echo "DONE"
 	;;
 	p2)
         	echo -n "Computing t2 graph..."
@@ -105,8 +107,8 @@ case $filter in
 		echo -n "Computing t3 graph..."
 		gnuplot <<- EOF
 			reset
-		    	set terminal png
-		    	set output 'p3_graph.png'
+		    set terminal png
+		    set output 'p3_graph.png'
 			set datafile separator ","                                                        
 			set title "TPressure per dates"                                                  
 			set xlabel "Dates"                                                                
@@ -139,7 +141,7 @@ case $filter in
 		    set palette rgb 33,13,10
 		    plot "$file" using 11:10:(column(8)*10):(column(9)*10):(sqrt(column(8)**2 + column(9)**2)) with vectors palette
 		EOF
-        	echo Done
+        	echo "Done"
         ;;
         h) 
         	echo -n "Computing h graph..."      
@@ -156,7 +158,7 @@ case $filter in
 		    set view map 
 		    splot "$file" using 9:10:6 with line
 		EOF
-        	echo Done
+        	echo "Done"
         ;;
         m)
 		echo -n "Computing m graph..."
@@ -173,7 +175,7 @@ case $filter in
 		    set view map     
 		    splot "$file" using 9:10:6 with line 
 		EOF
-		echo Done
+		echo "Done"
 	;;
 esac
 

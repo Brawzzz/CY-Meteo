@@ -273,7 +273,7 @@ echo
 # if not, compile it with Makefile
 c_name="sort"
 if [[ ! -f $c_name ]] ; then
-	echo "C programm not found, launching Makefile..."
+	echo -n "C programm not found, launching Makefile..."
 	if [[ ! -f "makefile" ]] ; then
 		echo "Error : Makefile not found" >&2
 		exit 1
@@ -285,6 +285,7 @@ if [[ ! -f $c_name ]] ; then
 			exit 1
 		fi
 	fi
+	echo "DONE"
 fi
 
 # Launch C programm for each filter
@@ -313,7 +314,7 @@ for filter in "${filters[@]}"; do
 
 			echo
 			if [ -f result$nb_filter.csv ] ; then
-				./gnuplot.sh -t1
+				./gnuplot.sh t1 result$nb_filter.csv
 			fi
 		;;
 		-t2)
@@ -327,7 +328,7 @@ for filter in "${filters[@]}"; do
 
 			echo
 			if [ -f result$nb_filter.csv ] ; then
-				./gnuplot.sh -t2
+				./gnuplot.sh t2 result$nb_filter.csv
 			fi
 		;;
 		-t3)
@@ -341,7 +342,7 @@ for filter in "${filters[@]}"; do
 			# Launch gnuplot script
 			echo
 			if [ -f result$nb_filter.csv ] ; then
-				./gnuplot.sh -t3
+				./gnuplot.sh t3 result$nb_filter.csv
 			fi
 		;;
 		-p1)
@@ -357,7 +358,7 @@ for filter in "${filters[@]}"; do
 			# Launch gnuplot script
 			echo
 			if [ -f result$nb_filter.csv ] ; then
-				./gnuplot.sh -p1
+				./gnuplot.sh p1 result$nb_filter.csv
 			fi
 		;;
 		-p2)
@@ -373,7 +374,7 @@ for filter in "${filters[@]}"; do
 			# Launch gnuplot script
 			echo
 			if [ -f result$nb_filter.csv ] ; then
-				./gnuplot.sh -p2
+				./gnuplot.sh p2 result$nb_filter.csv
 			fi
 		;;
 		-p3)
@@ -389,7 +390,7 @@ for filter in "${filters[@]}"; do
 			# Launch gnuplot script
 			echo
 			if [ -f result$nb_filter.csv ] ; then
-				./gnuplot.sh -p3
+				./gnuplot.sh p3 result$nb_filter.csv
 			fi
 		;;
 		-w)
@@ -403,7 +404,7 @@ for filter in "${filters[@]}"; do
 			# Launch gnuplot script
 			echo
 			if [ -f result$nb_filter.csv ] ; then
-				./gnuplot.sh -w
+				./gnuplot.sh -w result$nb_filter.csv 
 			fi
 		;;
 		-h)
@@ -417,7 +418,7 @@ for filter in "${filters[@]}"; do
 			# Launch gnuplot script
 			echo
 			if [ -f result$nb_filter.csv ] ; then
-				./gnuplot.sh -h
+				./gnuplot.sh h result$nb_filter.csv
 			fi
 		;;
 		-m)
@@ -433,7 +434,7 @@ for filter in "${filters[@]}"; do
 			# Launch gnuplot script
 			echo
 			if [ -f result$nb_filter.csv ] ; then
-				./gnuplot.sh -m
+				./gnuplot.sh m result$nb_filter.csv
 			fi
 		;;
 	esac
@@ -475,6 +476,6 @@ done
 
 echo
 echo -e "\033[32mSorting done !\033[0m"
-#rm result.csv $base_filename*  2> /dev/null
+rm result.csv $base_filename*  2> /dev/null
 
 exit 0

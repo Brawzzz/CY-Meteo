@@ -156,7 +156,7 @@ void in_fixe_search(p_tree t , FILE* file , int mode , int* c){
             if((t -> element) -> pass == 1){
                 fprintf(file , "%d,%d,%s,%s,%lf,%lf,%lf,%lf,%lf,%lf,%lf\n", *c , (t -> element) -> id , (t -> element) -> date , (t -> element) -> hour , (t -> element) -> data , (t -> element) -> min , (t -> element) -> max ,
                         (t -> element) -> average , (t -> element) -> average_1 , (t -> element) -> x , (t -> element) -> y);
-                // *c += 1;
+                *c += 1;
             }
 
             if(has_right_son(t)){
