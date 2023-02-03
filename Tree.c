@@ -8,15 +8,12 @@
 int max(int a , int b){
     return (a < b ? b : a);
 }
-
 int min(int a , int b){
     return (a < b ? a : b);
 }
-
 int Max(int a , int b , int c){
     return ( max(max(a , b) , max(b , c)) );
 }
-
 int Min(int a , int b , int c){
     return ( min(min(a , b) , min(b , c)) );
 }
@@ -742,6 +739,7 @@ p_tree insert_AVL_by_max(p_tree t , Data_Set* element , int* h){
         *h = 0;
         return t;
     }
+
     if(*h != 0){
         t -> equilibre += *h;
         t = balance_AVL(t);
