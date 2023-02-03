@@ -2,7 +2,7 @@
 
 # Explain how to use the command
 usage() {
-	#echo "usage: $0 -t<1-3> -p<1-3> -w -h -m [-F|-G|-S|-A|-O|-Q] [--tab|--val|--arb] [-d <min> <max>(YYYY-MM-DD)]"
+	#echo "usage: $0 -t<1-3> -p<1-3> -w -h -m [-F|-G|-S|-A|-O|-Q] [--tab|--avl|--abr] [-d <min> <max>(YYYY-MM-DD)]"
 	#echo "                  |At least one option set|                    | default to --tab|"
 
 	echo "usage: $0 -f <file> [Filter options] [[Zone options] [Sorting options] [Date options]]"
@@ -13,7 +13,7 @@ usage() {
 	echo "[Zone options] : -F -G -S -A -O -Q || -g <longitude_min> <longitude_max> -a <latitude_min> <latitude_max>"
 	echo "At most one zone option should be set (-g and -a can be set together, integer expected)"
 	echo
-	echo "[Sorting options] : --tab --val --arb"
+	echo "[Sorting options] : --tab --avl --abr"
 	echo "At most one sorting option should be set, default to --tab"
 	echo
 	echo "[Date options] : -d <min> <max>"
@@ -26,9 +26,8 @@ error_usage() {
 	exit 1
 }
 
-
 # Check the passed arguments
-getopt -a -n "meteoSH" -o \?f:whmFGSAOQd:g::a:: --long t1,t2,t3,p1,p2,p3,tab,val,arb,help -- "$@" > /dev/null 2>&1
+getopt -a -n "meteoSH" -o \?f:whmFGSAOQd:g::a:: --long t1,t2,t3,p1,p2,p3,tab,avl,abr,help -- "$@" > /dev/null 2>&1
 
 file=""
 filters=()
@@ -40,6 +39,8 @@ long_min=""
 long_max=""
 lat_min=""
 lat_max=""
+
+sorting_file=""
 
 # Parse options
 while [[ "$1" != "" ]] ; do
@@ -55,6 +56,9 @@ while [[ "$1" != "" ]] ; do
 		-t1|-t2|-t3|-p1|-p2|-p3|-w|-h|-m)
 			echo "Filter set    : $1"
 			filters+=("$1")
+			if [[ $1 == "-t3" ]] || [[ $1 == "-p3" ]]; then
+				sorting_file="true"
+			fi
 		;;
 		# Zone options
 		-F|-G|-S|-A|-O|-Q)
@@ -63,7 +67,7 @@ while [[ "$1" != "" ]] ; do
 			echo "Zone selected : $1"
 		;;
 		# Sorting options
-		--tab|--val|--arb)
+		--tab|--avl|--abr)
 			if [[ -z $sorting ]] ; then sorting="$1"; else echo "Sorting method already set"; exit 1; fi
 			echo "Sorting mode  : $1"
 		;;
@@ -123,13 +127,33 @@ if [[ -z $filters ]] ; then echo "At least one filter should be set (type --help
 
 if [[ -z $sorting ]] ; then echo "Sorting method not specified, default to --avl"; sorting="--avl"; fi
 
-
 echo "Filters       : ${#filters[@]}  ( ${filters[@]} )"
 echo
 
 tmp_out_file="tmp_file1.csv"
 out_file="output.csv"
 result_file="result.csv"
+
+date_file="dates.csv"
+id_coord_file="id_coord.csv"
+tmp="tmp.csv"
+
+if [[ ! -f $id_coord ]] && [[ ! -f $dates ]] ; then
+	if [[ $sorting == "--tab" ]] || [[ $sorting_file == "true" ]] ; then
+
+		echo "Computing necessary files for --tab or -t3/p3 options..."
+		tail -n +2 $file > $tmp
+		
+		# Make a file with all the single ID and the corresponding coordinates 
+		cut -d ";" -f 1,10 $tmp | sort -u >> $id_coord_file
+
+		# Make a file with all the single dates 
+		cut -d ";" -f 2 $tmp | sort -u >> $date_file
+
+		echo "Done"
+		echo
+	fi
+fi
 
 # Filter by zone
 if [[ ! -z $zone ]] ; then
@@ -142,6 +166,7 @@ if [[ ! -z $zone ]] ; then
 
 	# Keep the header
 	head $in_file -n 1 > $tmp_out_file
+	
 	# Check coordinates to keep only the ones in the zone
 	case $zone in
 		-F)
@@ -192,6 +217,7 @@ if [[ ! -z $long_min || ! -z $lat_min ]] ; then
 	else 
 		in_file="$file"
 	fi
+
 	# Keep the header
 	head $in_file -n 1 > $tmp_out_file
 
@@ -214,8 +240,10 @@ if [[ ! -z $date_min && ! -z $date_max ]] ; then
 	else 
 		in_file="$file"
 	fi
+
 	# Keep the header
 	head $in_file -n 1 > $tmp_out_file
+
 	# Check date to keep only the ones in the range
 	tail -n +2 $in_file | awk -F ';' -v date_min=$date_min -v date_max=$date_max \
 		'{ split($2, date, "T"); if (date[1] >= date_min && date[1] <= date_max) print }' >> $tmp_out_file
@@ -227,10 +255,17 @@ fi
 
 # Write result into the final file
 if [[ -f $out_file ]] ; then 
-	mv $out_file $result_file
+	echo "Removing the header..."
+	tail -n +2 $out_file > $tmp_out_file
+	mv $tmp_out_file $result_file
+	rm $out_file
+
 else
-	result_file=$file
+	echo "Removing the header..."
+	tail -n +2 $file > $tmp_out_file
+	mv $tmp_out_file $result_file
 fi
+echo
 
 # Test presence of C programm compiled
 # if not, compile it with Makefile
@@ -265,61 +300,174 @@ for filter in "${filters[@]}"; do
 	fi
 
 	case $filter in
-		-t1|-t2|-t3)
+		-t1)
 			if [[ ! -f $filename ]] ; then
 				cut -d ";" -f 1,2,11,10 $result_file | grep ";;;$" -v > $filename
 			fi
+			# Launch C programm
+			echo
+			./$c_name -f $filename -o result$nb_filter.csv --id --min --max --av $sorting
+			success=$?
+
+			echo
+			if [ -f result$nb_filter.csv ] ; then
+				./gnuplot.sh -t1
+			fi
 		;;
-		-p1|-p2|-p3)
+		-t2)
+			if [[ ! -f $filename ]] ; then
+				cut -d ";" -f 1,2,11,10 $result_file | grep ";;;$" -v > $filename
+			fi
+			# Launch C programm
+			echo
+			./$c_name -f $filename -o result$nb_filter.csv --date --av $sorting
+			success=$?
+
+			echo
+			if [ -f result$nb_filter.csv ] ; then
+				./gnuplot.sh -t2
+			fi
+		;;
+		-t3)
+			if [[ ! -f $filename ]] ; then
+				cut -d ";" -f 1,2,11,10 $result_file | grep ";;;$" -v > $filename
+			fi
+			# Launch C programm
+			echo
+			./$c_name -f $filename -o result$nb_filter.csv --date $sorting
+			success=$?
+			# Launch gnuplot script
+			echo
+			if [ -f result$nb_filter.csv ] ; then
+				./gnuplot.sh -t3
+			fi
+		;;
+		-p1)
 			if [[ ! -f $filename ]] ; then
 				cut -d ";" -f 1,2,7,10 $result_file | grep ";;$" -v > "temp_p.csv"
 				awk -F ";" '{print $1 ";" $2 ";" $4 ";" $3}' "temp_p.csv" > $filename
 				rm "temp_p.csv"
 			fi
+			# Launch C programm
+			echo
+			./$c_name -f $filename -o result$nb_filter.csv --id --min --max --av $sorting
+			success=$?
+			# Launch gnuplot script
+			echo
+			if [ -f result$nb_filter.csv ] ; then
+				./gnuplot.sh -p1
+			fi
+		;;
+		-p2)
+			if [[ ! -f $filename ]] ; then
+				cut -d ";" -f 1,2,7,10 $result_file | grep ";;$" -v > "temp_p.csv"
+				awk -F ";" '{print $1 ";" $2 ";" $4 ";" $3}' "temp_p.csv" > $filename
+				rm "temp_p.csv"
+			fi
+			# Launch C programm
+			echo
+			./$c_name -f $filename -o result$nb_filter.csv --date --av $sorting
+			success=$?
+			# Launch gnuplot script
+			echo
+			if [ -f result$nb_filter.csv ] ; then
+				./gnuplot.sh -p2
+			fi
+		;;
+		-p3)
+			if [[ ! -f $filename ]] ; then
+				cut -d ";" -f 1,2,7,10 $result_file | grep ";;$" -v > "temp_p.csv"
+				awk -F ";" '{print $1 ";" $2 ";" $4 ";" $3}' "temp_p.csv" > $filename
+				rm "temp_p.csv"
+			fi
+			# Launch C programm
+			echo
+			./$c_name -f $filename -o result$nb_filter.csv --date $sorting
+			success=$?
+			# Launch gnuplot script
+			echo
+			if [ -f result$nb_filter.csv ] ; then
+				./gnuplot.sh -p3
+			fi
 		;;
 		-w)
-			cut -d ";" -f 1,2,4,5,10 $result_file | grep ";;$" -v > $filename
+			if [[ ! -f $filename ]] ; then
+				cut -d ";" -f 1,2,4,5,10 $result_file | grep ";;$" -v > $filename
+			fi
+			# Launch C programm
+			echo
+			./$c_name -f $filename -o result$nb_filter.csv --id --av $sorting
+			success=$?
+			# Launch gnuplot script
+			echo
+			if [ -f result$nb_filter.csv ] ; then
+				./gnuplot.sh -w
+			fi
 		;;
 		-h)
-			cut -d ";" -f 1,2,14,10 $result_file > $filename
+			if [[ ! -f $filename ]] ; then
+				cut -d ";" -f 1,2,14,10 $result_file > $filename
+			fi
+			# Launch C programm
+			echo
+			./$c_name -f $filename -o result$nb_filter.csv --data --max -r $sorting
+			success=$?
+			# Launch gnuplot script
+			echo
+			if [ -f result$nb_filter.csv ] ; then
+				./gnuplot.sh -h
+			fi
 		;;
 		-m)
-			cut -d ";" -f 1,2,6,10 $result_file | grep ";$" -v > "temp_m.csv"
-			awk -F ";" '{print $1 ";" $2 ";" $4 ";" $3}' "temp_m.csv" > $filename
-			rm "temp_m.csv"
+			if [[ ! -f $filename ]] ; then
+				cut -d ";" -f 1,2,6,10 $result_file | grep ";$" -v > "temp_m.csv"
+				awk -F ";" '{print $1 ";" $2 ";" $4 ";" $3}' "temp_m.csv" > $filename
+				rm "temp_m.csv"
+			fi
+			# Launch C programm
+			echo
+			./$c_name -f $filename -o result$nb_filter.csv --data --max -r $sorting
+			success=$?
+			# Launch gnuplot script
+			echo
+			if [ -f result$nb_filter.csv ] ; then
+				./gnuplot.sh -m
+			fi
 		;;
 	esac
 
-	#output_c=$(./$c_name -f $filename -o result$nb_filter.csv $filter $sorting 2>&1)
-	# success=$?
-	# if [[ $success -ne 0 ]] ; then
-	# 	echo "Error while applying filter $filter in the C executable '$output_c'" >&2
-	# 	# Check error code to determine the error
-	# 	case $success in
-	# 		1)
-	# 			echo "Options error" >&2
-	# 		;;
-	# 		2)
-	# 			echo "Input file error" >&2
-	# 		;;
-	# 		3)
-	# 			echo "Output file error" >&2
-	# 		;;
-	# 		4)
-	# 			echo "Internal error" >&2
-	# 		;;
-	# 		126)
-	# 			echo "Permission problem (try 'chmod +x $c_name')" >&2
-	# 		;;
-	# 		127)
-	# 			echo "C executable not found (verify that '$c_name' is the correct name)" >&2
-	# 		;;
-	# 		*)
-	# 			echo "Unknown error : $output_c" >&2
-	# 		;;
-	# 	esac
-	# 	exit $success
-	# fi
+	if [[ -f $id_coord_file ]] && [[ -f $date_file ]] ; then
+		rm $id_coord_file $date_file $tmp
+	fi
+
+	if [[ $success -ne 0 ]] ; then
+		echo "Error while applying filter $filter in the C executable '$output_c'" >&2
+		# Check error code to determine the error
+		case $success in
+			1)
+				echo "Options error" >&2
+			;;
+			2)
+				echo "Input file error" >&2
+			;;
+			3)
+				echo "Output file error" >&2
+			;;
+			4)
+				echo "Internal error" >&2
+			;;
+			126)
+				echo "Permission problem (try 'chmod +x $c_name')" >&2
+			;;
+			127)
+				echo "C executable not found (verify that '$c_name' is the correct name)" >&2
+			;;
+			*)
+				echo "Unknown error : $output_c" >&2
+			;;
+		esac
+		exit $success
+	fi
 	((nb_filter++))
 done
 

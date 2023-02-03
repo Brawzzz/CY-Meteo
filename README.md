@@ -4,12 +4,6 @@ The purpose of this school prject is to treat a very big
 meteorological datas file and make some graphs to represent 
 theses datas.
 
-# ------ Compile the sort programm ------- #   
-
-In order to compile this project you have to enter the 
-command "make" on the terminal and the executable is 
-ready to use.
-
 # ------ How to use the application ------ #
 
 In order to know how you can use this application you can

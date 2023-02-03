@@ -31,6 +31,7 @@ typedef struct{
     double sum_1;
     double average_1;
 
+    char* hour;
     int tab_incr;
     int pass;
     
@@ -40,7 +41,7 @@ Data_Set* create_set();
 
 Data_Set* create_data_set(int id , char* date , double data , double d_x , double d_y , double min , double max , double x , double y);
 
-void print_data_set_tab(Data_Set** tab_data_set , int size , int r , FILE* output_file);
+void print_data_set_tab(Data_Set** tab_data_set , int size , int r , int mode , int *c , FILE* output_file);
 
 int compare_max(const void* a , const void* b);
 

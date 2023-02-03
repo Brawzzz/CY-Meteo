@@ -18,7 +18,14 @@ Data_Set* create_data_set(int id , char* date , double data , double d_x , doubl
     }
 
     data_set -> id = id;
-    data_set -> date = strdup(date);
+    if (strcmp(date , "\0") != 0){
+        data_set -> date = strtok(strdup(date) , "T");
+        data_set -> hour = strtok(strdup(date) , "T");
+        data_set -> hour = strtok(NULL , ":");
+    }
+    else{
+        data_set -> date = strdup(date);
+    }
     data_set -> data = data;
 
     data_set -> d_x = d_x;
@@ -44,18 +51,45 @@ Data_Set* create_data_set(int id , char* date , double data , double d_x , doubl
 }
 
 // print a table of Data_Set*
-void print_data_set_tab(Data_Set** tab_data_set , int size , int r , FILE* output_file){
-    if(r == 0){
-        for(int i = 0 ; i < size ; i++){
-            if(tab_data_set[i] -> pass == 1){
-                fprintf(output_file , "%d,%s,%lf,%lf,%lf,%lf,%lf\n" , tab_data_set[i] -> id , tab_data_set[i] -> date , tab_data_set[i] -> min , tab_data_set[i] -> max , tab_data_set[i] -> average , tab_data_set[i] -> x , tab_data_set[i] -> y);
+void print_data_set_tab(Data_Set** tab_data_set , int size , int r , int mode , int *c , FILE* output_file){
+    
+    if(mode == 1){
+        if(r == 0){
+            for(int i = 0 ; i < size ; i++){
+                if(tab_data_set[i] -> pass == 1){
+                    fprintf(output_file , "%d,%d,%s,%lf,%lf,%lf,%lf,%lf,%lf,%lf\n\n", *c , tab_data_set[i] -> id , tab_data_set[i] -> date , tab_data_set[i] -> data , tab_data_set[i] -> min , tab_data_set[i] -> max ,
+                            tab_data_set[i] -> average , tab_data_set[i] -> average_1 , tab_data_set[i] -> x , tab_data_set[i] -> y);
+                    *c += 1;
+                }
+            }
+        }
+        else{
+            for(int i = size - 1 ; i >= 0 ; i--){
+                if(tab_data_set[i] -> pass == 1){
+                    fprintf(output_file , "%d,%d,%s,%lf,%lf,%lf,%lf,%lf,%lf,%lf\n\n", *c , tab_data_set[i] -> id , tab_data_set[i] -> date , tab_data_set[i] -> data , tab_data_set[i] -> min , tab_data_set[i] -> max ,
+                            tab_data_set[i] -> average , tab_data_set[i] -> average_1 , tab_data_set[i] -> x , tab_data_set[i] -> y);
+                    *c += 1;
+                }
             }
         }
     }
     else{
-        for(int i = size - 1 ; i >= 0 ; i--){
-            if(tab_data_set[i] -> pass == 1){
-                fprintf(output_file , "%d,%s,%lf,%lf,%lf,%lf,%lf\n" , tab_data_set[i] -> id , tab_data_set[i] -> date , tab_data_set[i] -> min , tab_data_set[i] -> max , tab_data_set[i] -> average , tab_data_set[i] -> x , tab_data_set[i] -> y);
+        if(r == 0){
+            for(int i = 0 ; i < size ; i++){
+                if(tab_data_set[i] -> pass == 1){
+                    fprintf(output_file , "%d,%d,%s,%lf,%lf,%lf,%lf,%lf,%lf,%lf\n", *c , tab_data_set[i] -> id , tab_data_set[i] -> date , tab_data_set[i] -> data , tab_data_set[i] -> min , tab_data_set[i] -> max ,
+                            tab_data_set[i] -> average , tab_data_set[i] -> average_1 , tab_data_set[i] -> x , tab_data_set[i] -> y);
+                    *c += 1;
+                }
+            }
+        }
+        else{
+            for(int i = size - 1 ; i >= 0 ; i--){
+                if(tab_data_set[i] -> pass == 1){
+                    fprintf(output_file , "%d,%d,%s,%lf,%lf,%lf,%lf,%lf,%lf,%lf\n", *c , tab_data_set[i] -> id , tab_data_set[i] -> date , tab_data_set[i] -> data , tab_data_set[i] -> min , tab_data_set[i] -> max ,
+                            tab_data_set[i] -> average , tab_data_set[i] -> average_1 , tab_data_set[i] -> x , tab_data_set[i] -> y);
+                    *c += 1;
+                }
             }
         }
     }

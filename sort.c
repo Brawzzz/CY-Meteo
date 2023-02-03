@@ -1,9 +1,10 @@
 #define NMB_STATIONS 62
 #define NMB_DATES 37227
+#define NMB_HOURS 24
 #define M_PI 3.14159265358979323846
 
 #include "Tree.h"
-#include<math.h>
+#include <math.h>
 
 //------------------------------------ MAIN ---------------------------------------//
 int main(int argc, char *argv[]){
@@ -50,6 +51,10 @@ int main(int argc, char *argv[]){
 
     char** dates = NULL;
     char* dates_i = NULL;
+
+    char* hours = NULL;
+
+    int* id_s = NULL;
 
     double elapsed = 0.f;
 
@@ -204,6 +209,7 @@ int main(int argc, char *argv[]){
             printf("id option : %d ; date option : %d , data option : %d\n", ID_option_state , date_option_state , data_option_state);
             printf("min option : %d ; max option : %d , average option : %d\n\n", minimum_option_state , maximum_option_state , average_option_state);
 
+            printf("Sorting in progress...\n");
             //-------------------------------------- NO SORT OPTIONS / *--avl BY DEFAULT --------------------------------------//
             
             if(type_sort == NULL || avl_state == 1){
@@ -232,19 +238,23 @@ int main(int argc, char *argv[]){
                         fclose(input_file);
                         end = time(NULL);
 
+                        mode = 0;
+
                         // write the result in a file
+                        printf("Writing the sorting result in a file...");
                         output_file = fopen(output_filename , "w");
                         if(output_file == NULL){
                             error = 3;
                             exit(error);
                         }
                         if(r_option_state == 1){
-                            reverse_in_fixe_search(data_set_tree , output_file , mode);
+                            reverse_in_fixe_search(data_set_tree , output_file , mode , &count);
                         }
                         else{
                             in_fixe_search(data_set_tree , output_file , mode , &count);
                         }
                         fclose(output_file);
+                        printf("DONE\n");
 
                         free(data_set_tree);
                         data_set_tree = NULL;
@@ -276,25 +286,27 @@ int main(int argc, char *argv[]){
                         end = time(NULL);
 
                         // write the result in a file
+                        printf("Writing the sorting result in a file...");
                         output_file = fopen(output_filename , "w");
                         if(output_file == NULL){
                             error = 3;
                             exit(error);
                         }
                         if(r_option_state == 1){
-                            reverse_in_fixe_search(data_set_tree , output_file , mode);
+                            reverse_in_fixe_search(data_set_tree , output_file , mode , &count);
                         }
                         else{
                             in_fixe_search(data_set_tree , output_file , mode , &count);
                         }
                         fclose(output_file);
+                        printf("DONE\n");
 
                         free(data_set_tree);
                         data_set_tree = NULL;
                     }
                     
                     elapsed = end - start;
-                    printf("Temps écoulé : %f secondes\n", elapsed);  
+                    printf("Sorting time : %f seconds\n", elapsed);  
                 }
 
                 //------------------------------------- SORT BY DATE -------------------------------------// 
@@ -303,7 +315,7 @@ int main(int argc, char *argv[]){
                     //--------------------------- *-t2/*-p2 | min : 0 , max : 0 , average : 1 ---------------------------//
                     if(average_option_state == 1 && minimum_option_state == 0 && maximum_option_state == 0){
                         
-                        mode = 1;
+                        mode = 0;
                         start = time(NULL); 
 
                         // start reading the data file and update data_set_tree
@@ -316,68 +328,85 @@ int main(int argc, char *argv[]){
 
                             sscanf(data_line , "%d;%[^;];%lf,%lf;%lf" , &ID , complete_date , &x , &y , &data);
                             data_set = create_data_set(0 , complete_date , data , 0 , 0 , 0 , 0 , 0 , 0);
-                            data_set_tree = insert_AVL_by_date(data_set_tree , data_set , &balance);
+                            data_set_tree = insert_AVL_by_date(data_set_tree , data_set , mode , &balance);
                         }
                         end = time(NULL);
                         fclose(input_file);
 
                         // write the result in a file
+                        printf("Writing the sorting result in a file...");
                         output_file = fopen(output_filename , "w");
                         if(output_file == NULL){
                             error = 3;
                             exit(error);
                         }
                         if(r_option_state == 1){
-                            reverse_in_fixe_search(data_set_tree , output_file , mode);                        
+                            reverse_in_fixe_search(data_set_tree , output_file , mode , &count);                        
                         }
                         else{
                             in_fixe_search(data_set_tree , output_file , mode , &count);                         
                         }
                         fclose(output_file);
                         free(data_set_tree);
+
+                        printf("DONE\n");
                     }
 
                     //--------------------------- *-t3/*-p3 | min : 0 , max : 0 , average : 0 ---------------------------//
                     else if(average_option_state == 0 && minimum_option_state == 0 && maximum_option_state == 0){
 
-                        mode = -1;
+                        mode = 1;
+                        int index_2 = 0;
                         start = time(NULL);
 
-                        // tab of dates allocation
-                        char** dates = (char**)malloc(NMB_DATES * sizeof(char*));
-                        if (dates == NULL){
+                        // tab of all single hours
+                        char* hours[NMB_HOURS] = {"00" , "01" , "02" , "03" , "04" , "05" , 
+                                           "06" , "07" , "08" , "09" , "10" , "11" , 
+                                           "12" , "13" , "14" , "15" , "16" , "17" , 
+                                           "18" , "19" , "20" , "21" , "22" , "23" } ;
+
+                        // tab of id allocation
+                        id_s = (int*)malloc(NMB_STATIONS * sizeof(int));
+                        if (id_s == NULL){
                             error = 4;
                             exit(error);
                         }
-                        for (int i = 0 ; i < NMB_DATES ; i++){
-                            char* dates_i = (char*)malloc(26 * sizeof(char));
-                            if (dates_i == NULL){
+                        // fill the is tab with alll the single id
+                        id_file = fopen(id_filename , "r");
+                        if (id_file == NULL){
+                            error = 4;
+                            exit(error);
+                        }
+                        while (fgets(id_line , sizeof(id_line) , id_file) != NULL) {
+                            sscanf(id_line , "%d" , &id_s[i]);
+                            i++;
+                        }
+                        fclose(id_file);
+                        
+                        // Allocates a tab of tab of temporary trees
+                        p_tree** tmp_trees = malloc(NMB_HOURS * sizeof(p_tree*));
+                        if (tmp_trees == NULL){
+                            error = 4;
+                            exit(error);
+                        }
+
+                        for (int j = 0 ; j < NMB_HOURS ; j++){
+                            // allocates a tab of p_tree
+                            tree_tab = malloc(NMB_STATIONS * sizeof(p_tree));
+                            if (tree_tab == NULL){
                                 error = 4;
                                 exit(error);
                             }
-                            memset(dates_i , 0 , sizeof(dates_i));
-                            dates[i] = dates_i;
-                        }
-                        // fill the tab with all the single dates
-                        date_file = fopen(date_filename , "r");
-                        if(date_file == NULL){
-                            error = 2;
-                            exit(error);
-                        } 
-                        while (fgets(date_line , sizeof(date_line) , date_file) != NULL) {
-                            sscanf(date_line , "%s" , dates[i]);
-                            i++;
-                        }
-                        fclose(date_file);
+                            for (int i = 0 ; i < NMB_STATIONS ; i++){
+                                data_set = create_data_set(id_s[i] , "\0" , 0 , 0 , 0 , 0 , 0 , 0 , 0);
+                                data_set -> hour = hours[i]; 
 
-                        // allocates a tab of p_tree
-                        tree_tab = malloc(NMB_DATES * sizeof(p_tree));
-                        if (tree_tab == NULL){
-                            error = 4;
-                            exit(error);
+                                tree_tab[i] = create_tree(data_set); 
+                            }
+                            tmp_trees[j] = tree_tab;
                         }
-
-                        // start reading the data file and update tree_tab
+                        
+                        // start reading the data file and update tmp_trees
                         input_file = fopen(input_filename , "r+");
                         if(input_file == NULL){
                             error = 2;
@@ -387,40 +416,51 @@ int main(int argc, char *argv[]){
 
                             sscanf(data_line , "%d;%[^;];%lf,%lf;%lf" , &ID , complete_date , &x , &y , &data);
                             data_set = create_data_set(ID , complete_date , data , 0 , 0 , 0 , 0 , 0 , 0);
-
+                    
                             // resarch complete_date in the tab of p_tree 
-                            if(binary_search_date(dates , NMB_DATES , complete_date , &index)){
-                                tree_tab[index] = insert_AVL_by_ID(tree_tab[index] , data_set , &balance , mode); 
+                            if(binary_search_tree_hour(tmp_trees , 24 , data_set -> hour , &index)){
+                                if(binary_search_tree_id(tmp_trees[index] , NMB_STATIONS , ID , &index_2)){
+                                    tmp_trees[index][index_2] = insert_AVL_by_date(tmp_trees[index][index_2] , data_set , mode , &balance);
+                                } 
                             }
                         }
                         fclose(input_file);
                         end = time(NULL);
-
+                        
                         mode = 0;
 
                         // write the result in a file
+                        printf("Writing the sorting result in a file...");
                         output_file = fopen(output_filename , "w");
                         if(output_file == NULL){
                             error = 3;
                             exit(error);
                         }
- 
                         if(r_option_state == 1){
-                            for (int i = 0 ; i < NMB_DATES ; i++){
-                                reverse_in_fixe_search(tree_tab[i] , output_file , mode);                        
+                            for (int i = 1 ; i < NMB_HOURS ; i++){
+                                for (int j = 0 ; j < NMB_STATIONS ; j++){
+                                    reverse_in_fixe_search(tmp_trees[i][j] , output_file , mode , &count);  
+                                    fprintf(output_file , "\n"); 
+                                    count += 1;   
+                                }                  
                             }
                         }
                         else{
-                            for (int i = 0 ; i < NMB_DATES ; i++){
-                                in_fixe_search(tree_tab[i] , output_file , mode , &count);                        
-                            }   
+                            for (int i = 1 ; i < NMB_HOURS ; i++){
+                                for (int j = 0 ; j < NMB_STATIONS ; j++){
+                                    in_fixe_search(tmp_trees[i][j] , output_file , mode , &count);  
+                                    fprintf(output_file , "\n"); 
+                                    count += 1;   
+                                }                  
+                            }  
                         }
                         fclose(output_file);
                         free(tree_tab);
+                        printf("DONE\n");
                     }
 
                     elapsed = end - start;
-                    printf("Temps écoulé : %f secondes\n", elapsed);
+                    printf("Sorting time : %f seconds\n", elapsed);
                 }
   
                 //------------------------------------- SORT BY DATA -------------------------------------//
@@ -456,15 +496,17 @@ int main(int argc, char *argv[]){
                     free(id_tree);
                     id_tree = NULL;
 
+                    mode = 1;
+
                     // write the result in a file
+                    printf("Writing the sorting result in a file...");
                     output_file = fopen(output_filename , "w");
                     if(output_file == NULL){
                         error = 3;
                         exit(error);
                     }
-                    mode = 1;
                     if(r_option_state == 1){
-                        reverse_in_fixe_search(data_set_tree , output_file , mode);
+                        reverse_in_fixe_search(data_set_tree , output_file , mode , &count);
                     }
                     else{
                         in_fixe_search(data_set_tree , output_file , mode , &count);
@@ -473,9 +515,10 @@ int main(int argc, char *argv[]){
 
                     free(data_set_tree);
                     data_set_tree = NULL;
+                    printf("DONE\n");
                 
                     elapsed = end - start;
-                    printf("Temps écoulé : %f secondes\n", elapsed);
+                    printf("Sorting time : %f seconds\n", elapsed);
                 }
             }
 
@@ -498,25 +541,30 @@ int main(int argc, char *argv[]){
                         }
                         while (fgets(data_line , sizeof(data_line) , input_file) != NULL) {
                             sscanf(data_line , "%d;%[^;];%lf,%lf;%lf" , &ID , complete_date , &x , &y , &data);
+
                             data_set = create_data_set(ID , "\0" , data , 0 , 0 , INT_MAX , INT_MIN , x , y);
                             data_set_tree = insert_ABR_by_ID(data_set_tree , data_set , mode);
                         }
                         fclose(input_file);
                         end = time(NULL);
 
+                        mode = 0;
+
                         // write the result in a file
+                        printf("Writing the sorting result in a file...");
                         output_file = fopen(output_filename , "w");
                         if(output_file == NULL){
                             error = 3;
                             exit(error);
                         }
                         if(r_option_state == 1){
-                            reverse_in_fixe_search(data_set_tree , output_file , mode);
+                            reverse_in_fixe_search(data_set_tree , output_file , mode , &count);
                         }
                         else{
                             in_fixe_search(data_set_tree , output_file , mode , &count);
                         }
                         fclose(output_file);
+                        printf("DONE\n");
 
                         free(data_set_tree);
                         data_set_tree = NULL;
@@ -549,25 +597,27 @@ int main(int argc, char *argv[]){
                         end = time(NULL);
 
                         // write the result in a file
+                        printf("Writing the sorting result in a file...");
                         output_file = fopen(output_filename , "w");
                         if(output_file == NULL){
                             error = 3;
                             exit(error);
                         }
                         if(r_option_state == 1){
-                            reverse_in_fixe_search(data_set_tree , output_file , mode);
+                            reverse_in_fixe_search(data_set_tree , output_file , mode , &count);
                         }
                         else{
                             in_fixe_search(data_set_tree , output_file , mode , &count);
                         }
                         fclose(output_file);
+                        printf("DONE\n");
 
                         free(data_set_tree);
                         data_set_tree = NULL;
                     }
                     
                     elapsed = end - start;
-                    printf("Temps écoulé : %f secondes\n", elapsed);  
+                    printf("Sorting time : %f seconds\n", elapsed);  
                 }
 
                 //------------------------------------- SORT BY DATE -------------------------------------// 
@@ -576,7 +626,7 @@ int main(int argc, char *argv[]){
                     //--------------------------- *-t2/*-p2 | min : 0 , max : 0 , average : 1 ---------------------------//
                     if(average_option_state == 1 && minimum_option_state == 0 && maximum_option_state == 0){
                         
-                        mode = 1;
+                        mode = 0;
                         start = time(NULL); 
 
                         // start reading the data file and update data_set_tree
@@ -589,72 +639,84 @@ int main(int argc, char *argv[]){
 
                             sscanf(data_line , "%d;%[^;];%lf,%lf;%lf" , &ID , complete_date , &x , &y , &data);
                             data_set = create_data_set(0 , complete_date , data , 0 , 0 , 0 , 0 , 0 , 0);
-                            data_set_tree = insert_ABR_by_date(data_set_tree , data_set);
+                            data_set_tree = insert_ABR_by_date(data_set_tree , data_set , mode);
                         }
                         end = time(NULL);
                         fclose(input_file);
 
                         // write the result in a file
+                        printf("Writing the sorting result in a file...");
                         output_file = fopen(output_filename , "w");
                         if(output_file == NULL){
                             error = 3;
                             exit(error);
                         }
                         if(r_option_state == 1){
-                            reverse_in_fixe_search(data_set_tree , output_file , mode);                        
+                            reverse_in_fixe_search(data_set_tree , output_file , mode , &count);                        
                         }
                         else{
                             in_fixe_search(data_set_tree , output_file , mode , &count);                         
                         }
                         fclose(output_file);
                         free(data_set_tree);
+                        printf("DONE\n");
                     }
 
                     //--------------------------- *-t3/*-p3 | min : 0 , max : 0 , average : 0 ---------------------------//
                     else if(average_option_state == 0 && minimum_option_state == 0 && maximum_option_state == 0){
 
-                        mode = -1;
+                        mode = 1;
+                        int index_2 = 0;
                         start = time(NULL);
 
-                        // tab of dates allocation
-                        char** dates = (char**)malloc(NMB_DATES * sizeof(char*));
-                        if (dates == NULL){
+                        // tab of all single hours
+                        char* hours[NMB_HOURS] = {"00" , "01" , "02" , "03" , "04" , "05" , 
+                                           "06" , "07" , "08" , "09" , "10" , "11" , 
+                                           "12" , "13" , "14" , "15" , "16" , "17" , 
+                                           "18" , "19" , "20" , "21" , "22" , "23" } ;
+
+                        // tab of id allocation
+                        id_s = (int*)malloc(NMB_STATIONS * sizeof(int));
+                        if (id_s == NULL){
                             error = 4;
                             exit(error);
                         }
-                        for (int i = 0 ; i < NMB_DATES ; i++){
-                            char* dates_i = (char*)malloc(26 * sizeof(char));
-                            if (dates_i == NULL){
+                        // fill the is tab with alll the single id
+                        id_file = fopen(id_filename , "r");
+                        if (id_file == NULL){
+                            error = 4;
+                            exit(error);
+                        }
+                        while (fgets(id_line , sizeof(id_line) , id_file) != NULL) {
+                            sscanf(id_line , "%d" , &id_s[i]);
+                            i++;
+                        }
+                        fclose(id_file);
+                        
+                        // Allocates a tab of temporary trees
+                        p_tree** tmp_trees = malloc(NMB_HOURS * sizeof(p_tree*));
+                        if (tmp_trees == NULL){
+                            error = 4;
+                            exit(error);
+                        }
+
+                        for (int j = 0 ; j < NMB_HOURS ; j++){
+                            // allocates a tab of p_tree
+                            tree_tab = malloc(NMB_STATIONS * sizeof(p_tree));
+                            if (tree_tab == NULL){
                                 error = 4;
                                 exit(error);
                             }
-                            memset(dates_i , 0 , sizeof(dates_i));
-                            dates[i] = dates_i;
-                        }
-                        // fill a tab with all the single dates
-                        date_file = fopen(date_filename , "r");
-                        if(date_file == NULL){
-                            error = 2;
-                            exit(error);
-                        } 
-                        while (fgets(date_line , sizeof(date_line) , date_file) != NULL) {
-                            sscanf(date_line , "%s" , dates[i]);
-                            i++;
-                        }
-                        fclose(date_file);
+                            for (int i = 0 ; i < NMB_STATIONS ; i++){
+                                data_set = create_data_set(id_s[i] , "\0" , 0 , 0 , 0 , 0 , 0 , 0 , 0);
+                                data_set -> hour = hours[i]; 
 
-                        // allocates and fill a tab of p_tree with the single dates
-                        tree_tab = malloc(NMB_DATES * sizeof(p_tree));
-                        if (tree_tab == NULL){
-                            error = 4;
-                            exit(error);
+                                tree_tab[i] = create_tree(data_set); 
+                            }
+                            tmp_trees[j] = tree_tab;
                         }
-                        for (int i = 0 ; i < NMB_DATES ; i++){
-                            data_set = create_data_set(0 , dates[i] , 0 , 0 , 0 , 0 , 0 , 0 , 0);
-                            tree_tab[i] = create_tree(data_set); 
-                        }
-
-                        // start reading the data file and update tree_tab
+                        
+                        // start reading the data file and update tmp_trees
                         input_file = fopen(input_filename , "r+");
                         if(input_file == NULL){
                             error = 2;
@@ -664,38 +726,51 @@ int main(int argc, char *argv[]){
 
                             sscanf(data_line , "%d;%[^;];%lf,%lf;%lf" , &ID , complete_date , &x , &y , &data);
                             data_set = create_data_set(ID , complete_date , data , 0 , 0 , 0 , 0 , 0 , 0);
-
+                    
                             // resarch complete_date in the tab of p_tree 
-                            if(binary_search_tree_date(tree_tab , NMB_DATES , complete_date , &index)){
-                                tree_tab[index] = insert_ABR_by_ID(tree_tab[index] , data_set , mode);
+                            if(binary_search_tree_hour(tmp_trees , 24 , data_set -> hour , &index)){
+                                if(binary_search_tree_id(tmp_trees[index] , NMB_STATIONS , ID , &index_2)){
+                                    tmp_trees[index][index_2] = insert_ABR_by_date(tmp_trees[index][index_2] , data_set , mode);
+                                } 
                             }
                         }
-                        end = time(NULL);
                         fclose(input_file);
-
+                        end = time(NULL);
+                        
                         mode = 0;
+
                         // write the result in a file
+                        printf("Writing the sorting result in a file...");
                         output_file = fopen(output_filename , "w");
                         if(output_file == NULL){
                             error = 3;
                             exit(error);
                         }
                         if(r_option_state == 1){
-                            for (int i = 0 ; i < NMB_DATES ; i++){
-                                reverse_in_fixe_search(tree_tab[i] , output_file , mode);                        
+                            for (int i = 1 ; i < NMB_HOURS ; i++){
+                                for (int j = 0 ; j < NMB_STATIONS ; j++){
+                                    reverse_in_fixe_search(tmp_trees[i][j] , output_file , mode , &count);  
+                                    fprintf(output_file , "\n"); 
+                                    count += 1;   
+                                }                  
                             }
                         }
                         else{
-                            for (int i = 0 ; i < NMB_DATES ; i++){
-                                in_fixe_search(tree_tab[i] , output_file , mode , &count);                        
-                            }   
+                            for (int i = 1 ; i < NMB_HOURS ; i++){
+                                for (int j = 0 ; j < NMB_STATIONS ; j++){
+                                    in_fixe_search(tmp_trees[i][j] , output_file , mode , &count);  
+                                    fprintf(output_file , "\n"); 
+                                    count += 1;   
+                                }                  
+                            }  
                         }
                         fclose(output_file);
                         free(tree_tab);
+                        printf("DONE\n");
                     }
 
                     elapsed = end - start;
-                    printf("Temps écoulé : %f secondes\n", elapsed);
+                    printf("Sorting time : %f seconds\n", elapsed);
                 }
   
                 //------------------------------------- SORT BY DATA -------------------------------------//
@@ -714,7 +789,7 @@ int main(int argc, char *argv[]){
                         mode = 0;
 
                         while (fgets(data_line, sizeof(data_line) , input_file) != NULL) {
-
+                            
                             sscanf(data_line , "%d;%[^;];%lf,%lf;%lf;" , &ID , complete_date ,  &x , &y , &data);
                             data_set = create_data_set(ID , "\0" , data , 0 , 0 , 0 , INT_MIN , x , y);
                             id_tree = insert_ABR_by_ID(id_tree , data_set , mode);
@@ -727,28 +802,29 @@ int main(int argc, char *argv[]){
                     free(id_tree);
                     id_tree = NULL;
 
+                    mode = 1;
+
+                    // write the result in a file
+                    printf("Writing the sorting result in a file...");
                     output_file = fopen(output_filename , "w");
                     if(output_file == NULL){
                         error = 3;
                         exit(error);
                     }
-
-                    mode = 1;
-
                     if(r_option_state == 1){
-                        reverse_in_fixe_search(data_set_tree , output_file , mode);
+                        reverse_in_fixe_search(data_set_tree , output_file , mode , &count);
                     }
                     else{
                         in_fixe_search(data_set_tree , output_file , mode , &count);
                     }
-                  
                     fclose(output_file);
+                    printf("DONE\n");
 
                     free(data_set_tree);
                     data_set_tree = NULL;
-                
+
                     elapsed = end - start;
-                    printf("Temps écoulé : %f secondes\n", elapsed);
+                    printf("Sorting time : %f seconds\n", elapsed);
                 }
             }
 
@@ -757,6 +833,9 @@ int main(int argc, char *argv[]){
 
                 i = 0;
                 index = 0;
+
+                count = 0;
+                mode = 0;
 
                 //------------------------------------- SORT BY ID -------------------------------------//
                 if (ID_option_state == 1){
@@ -775,7 +854,7 @@ int main(int argc, char *argv[]){
                         // fill a tab with all the single id
                         id_file = fopen(id_filename , "r");
                         if(id_file == NULL){
-                            error = 2;
+                            error = 4;
                             exit(error);
                         }
                         while (fgets(id_line , sizeof(id_line) , id_file) != NULL) {
@@ -817,21 +896,20 @@ int main(int argc, char *argv[]){
                                 // update the status of tab_data_set[index]
                                 tab_data_set[index] -> pass = 1;
                             }
-                            else{
-                                
-                            }
                         }
                         fclose(input_file);
                         end = time(NULL);
                         
                         // write the result in a file
+                        printf("Writing the sorting result in a file...");
                         output_file = fopen(output_filename , "w");
                         if(output_file == NULL){
                             error = 3;
                             exit(error);
                         }
-                        print_data_set_tab(tab_data_set , NMB_STATIONS , r_option_state , output_file);
+                        print_data_set_tab(tab_data_set , NMB_STATIONS , r_option_state , mode , &count , output_file);
                         fclose(output_file);
+                        printf("DONE\n");
 
                         free(tab_data_set);
                     }
@@ -894,23 +972,21 @@ int main(int argc, char *argv[]){
                         end = time(NULL);
 
                         // write the result in a file
+                        printf("Writing the sorting result in a file...");
                         output_file = fopen(output_filename , "w");
                         if(output_file == NULL){
                             error = 3;
                             exit(error);
                         }
-                        for (int i = 0 ; i < NMB_STATIONS ; i++){
-                            if(tab_data_set[i] -> pass == 1){
-                                fprintf(output_file , "%d,%lf,%lf,%lf,%lf\n" , tab_data_set[i] -> id , tab_data_set[i] -> average , tab_data_set[i] -> average_1 , tab_data_set[i] -> x , tab_data_set[i] -> y);
-                            }
-                        }
+                        print_data_set_tab(tab_data_set , NMB_STATIONS , r_option_state , mode , &count , output_file);
                         fclose(output_file);
 
                         free(tab_data_set);
+                        printf("DONE\n");
                     } 
                 
                     elapsed = end - start;
-                    printf("Temps écoulé : %f secondes\n", elapsed);     
+                    printf("Sorting time : %f seconds\n", elapsed);     
                 }
                 
                 //------------------------------------- SORT BY DATE -------------------------------------//
@@ -939,7 +1015,7 @@ int main(int argc, char *argv[]){
                         // fill dates tab with all the single dates
                         date_file = fopen(date_filename , "r");
                         if(date_file == NULL){
-                            error = 2;
+                            error = 4;
                             exit(error);
                         }
                         while (fgets(date_line , sizeof(date_line) , date_file) != NULL) {
@@ -955,13 +1031,12 @@ int main(int argc, char *argv[]){
                             exit(error);
                         }
                         for (int i = 0 ; i < NMB_DATES ; i++){
-                            tab_data_set[i] = create_set();
-                            tab_data_set[i] -> date = "\0";
+                            tab_data_set[i] = create_data_set(0 , dates[i] , 0 , 0 , 0 , 0 , 0 , 0 , 0);
                             tab_data_set[i] -> pass = 0;
                         }
                         
                         i = 0;
-
+                        
                         // start reading the data file and update tab_data_set
                         input_file = fopen(input_filename , "r+");
                         if(input_file == NULL){
@@ -971,146 +1046,145 @@ int main(int argc, char *argv[]){
                         while (fgets(data_line, sizeof(data_line) , input_file) != NULL) {
 
                             sscanf(data_line , "%d;%[^;];%lf,%lf;%lf" , &ID , date , &x , &y , &data);
-                            
-                            // search the index of date in dates and update min, 
+                            data_set = create_data_set(0 , date , data , 0 , 0 , 0 , 0 , 0 , 0);
+
+                            // search the index of date in tab_data_set and update min, 
                             // max, average of tab_data_set at the same index
-                            if(binary_search_date(dates , NMB_DATES , date , &index)){
+                            if(binary_search_data_set_date(tab_data_set , NMB_DATES , data_set -> date , &index)){
 
-                                // create a new data_set if ther is no date at tab_data_set[index]
-                                if(strcmp(tab_data_set[index] -> date , "\0") == 0){
+                                tab_data_set[index] -> nmb_data += 1;
+                                tab_data_set[index] -> sum += data; 
+                                tab_data_set[index] -> average = (tab_data_set[index] -> sum) / (tab_data_set[index] -> nmb_data);
 
-                                    tab_data_set[index] = create_data_set(0 , date , 0 , 0 , 0 , 0 , 0 , 0 , 0);
-                                    // Compute the average
-                                    tab_data_set[index] -> nmb_data += 1;
-                                    tab_data_set[index] -> sum += data; 
-                                    tab_data_set[index] -> average = (tab_data_set[index] -> sum) / (tab_data_set[index] -> nmb_data);
-                                    
-                                    tab_data_set[index] -> pass = 1;
-                                }
-                                else{
-                                    // Compute the average
-                                    tab_data_set[index] -> nmb_data += 1;
-                                    tab_data_set[index] -> sum += data; 
-                                    tab_data_set[index] -> average = (tab_data_set[index] -> sum) / (tab_data_set[index] -> nmb_data);
-                                }
+                                tab_data_set[index] -> pass = 1;
                             }
                         }
                         fclose(input_file);
                         end = time(NULL);
 
                         // write the result in a file
+                        printf("Writing the sorting result in a file...");
                         output_file = fopen(output_filename , "w");
                         if(output_file == NULL){
                             error = 3;
                             exit(error);
                         }
-                        print_data_set_tab(tab_data_set , NMB_DATES , r_option_state , output_file);
+                        print_data_set_tab(tab_data_set , NMB_DATES , r_option_state , mode , &count , output_file);
                         fclose(output_file);
+                        printf("DONE\n");
                     }
 
                     //--------------------------- *-t3/*-p3 | min : 0 , max : 0 , average : 0 ---------------------------//
                     else if (average_option_state == 0 && minimum_option_state == 0 && maximum_option_state == 0){
+                        
+                        // i = 0;
+                        // int index_2 = 0;
+                        // start = time(NULL);
 
-                        i = 0;
-                        start = time(NULL);
+                        // // tab of all single hours
+                        // char* hours[NMB_HOURS] = {"00" , "01" , "02" , "03" , "04" , "05" , 
+                        //                    "06" , "07" , "08" , "09" , "10" , "11" , 
+                        //                    "12" , "13" , "14" , "15" , "16" , "17" , 
+                        //                    "18" , "19" , "20" , "21" , "22" , "23" } ;
 
-                        // tab of dates allocation
-                        char** dates = (char**)malloc(NMB_DATES * sizeof(char*));
-                        if (dates == NULL){
-                            error = 4;
-                            exit(error);
-                        }
-                        for (int i = 0 ; i < NMB_DATES ; i++){
-                            char* dates_i = (char*)malloc(26 * sizeof(char));
-                            if (dates_i == NULL){
-                                error = 4;
-                                exit(error);
-                            }
-                            memset(dates_i , 0 , sizeof(dates_i));
-                            dates[i] = dates_i;
-                        }
-                        // fill dates with all the single dates
-                        date_file = fopen(date_filename , "r");
-                        if(date_file == NULL){
-                            error = 4;
-                            exit(error);
-                        }
-                        while (fgets(date_line , sizeof(date_line) , date_file) != NULL) {
-                            sscanf(date_line , "%s" , dates[i]);
-                            i++;
-                        }
-                        fclose(date_file);
+                        // // tab of id allocation
+                        // id_s = (int*)malloc(NMB_STATIONS * sizeof(int));
+                        // if (id_s == NULL){
+                        //     error = 4;
+                        //     exit(error);
+                        // }
+                        // // fill the is tab with alll the single id
+                        // id_file = fopen(id_filename , "r");
+                        // if (id_file == NULL){
+                        //     error = 4;
+                        //     exit(error);
+                        // }
+                        // while (fgets(id_line , sizeof(id_line) , id_file) != NULL) {
+                        //     sscanf(id_line , "%d" , &id_s[i]);
+                        //     i++;
+                        // }
+                        // fclose(id_file);
 
-                        // allocates a tab of tab of data_set* and fill it with the single dates
-                        Data_Set*** tab = malloc(NMB_DATES * sizeof(Data_Set**));
-                        if (tab == NULL){
-                            error = 4;
-                            exit(error);
-                        }
-                        for (int i = 0 ; i < NMB_DATES ; i++){
-                            tab_data_set = malloc(NMB_STATIONS * sizeof(Data_Set*));
-                            if (tab_data_set == NULL){
-                                error = 4;
-                                exit(error);
-                            }
-                            for (int j = 0 ; j < NMB_STATIONS ; j++){
-                                tab_data_set[j] = create_data_set(0 , dates[i] , 0 , 0 , 0 , 0 , 0 , 0 , 0);
-                                tab_data_set[j] -> pass = 0;
-                            }
-                            tab[i] = tab_data_set;
-                        }
+                        // // allocates a tab of tab of data_set** and fill it with the single dates
+                        // Data_Set**** tab = malloc(NMB_HOURS * sizeof(Data_Set***));
+                        // if (tab == NULL){
+                        //     error = 4;
+                        //     exit(error);
+                        // }
+                        // for (int i = 0 ; i < NMB_HOURS ; i++){
+                        //     Data_Set*** tab_i = malloc(NMB_STATIONS * sizeof(Data_Set**));
+                        //     if (tab_i == NULL){
+                        //         error = 4;
+                        //         exit(error);
+                        //     }
+                        //     for (int j = 0 ; j < NMB_STATIONS ; j++){
+                                
+                        //         tab_data_set = malloc(NMB_DATES * sizeof(Data_Set*));
+                        //         if (tab_data_set == NULL){
+                        //             error = 4;
+                        //             exit(error);
+                        //         }
+                        //         tab_i[j] = tab_data_set;
+                        //     }
+                        //     tab[i] = tab_i;
+                        // }
 
-                        i = 0;
+                        // for (int i = 0; i < NMB_DATES; i++){
+                        //     printf("%d\n",tab[1][i][1] -> id);
+                        // }
+                        
 
-                        // start reading the input file and update tab
-                        input_file = fopen(input_filename , "r+");
-                        if(input_file == NULL){
-                            error = 2;
-                            exit(error);
-                        } 
-                        while (fgets(data_line, sizeof(data_line) , input_file) != NULL) {
+                        // i = 0;
 
-                            sscanf(data_line , "%d;%[^;];%lf,%lf;%lf" , &ID , complete_date , &x , &y , &data);
+                        // // start reading the input file and update tab
+                        // input_file = fopen(input_filename , "r+");
+                        // if(input_file == NULL){
+                        //     error = 2;
+                        //     exit(error);
+                        // } 
+                        // while (fgets(data_line, sizeof(data_line) , input_file) != NULL) {
 
-                            // search the complete_date in tab 
-                            // and update the data if it's found
-                            if(binary_search_tab_date(tab , NMB_DATES , complete_date , &index)){
-                                i = tab[index][0] -> tab_incr;
+                        //     sscanf(data_line , "%d;%[^;];%lf,%lf;%lf" , &ID , complete_date , &x , &y , &data);
+                        //     data_set = create_data_set(ID , complete_date , data , 0 , 0 , 0 , 0 , 0 , 0);
 
-                                (tab[index][i]) -> id = ID;
-                                (tab[index][i]) -> data = data;
-                                (tab[index][0] -> tab_incr)++;
+                        //     // search the complete_date in tab 
+                        //     // and update the data if it's found
+                        //     if(binary_search_tab_date(tab , NMB_HOURS , data_set -> hour , &index)){
+                        //         if(binary_search_tab_date(tab , NMB_HOURS , data_set -> hour , &index)){
+                        //         i = tab[index][0] -> tab_incr;
 
-                                (tab[index][i]) -> pass = 1;
-                            }
-                        }
-                        fclose(input_file);
+                        //         (tab[index][i]) -> id = ID;
+                        //         (tab[index][i]) -> data = data;
+                        //         (tab[index][0] -> tab_incr)++;
 
-                        // sort all the Data_Set* tabs of tab by id
-                        for (int i = 0 ; i < NMB_DATES ; i++){
-                            qsort(tab[i] , NMB_STATIONS , sizeof(Data_Set*) , compare_id);
-                        }
-                        end = time(NULL);
+                        //         (tab[index][i]) -> pass = 1;
+                        //     }
+                        // }
+                        // fclose(input_file);
 
-                        // // write the result in a file
-                        output_file = fopen(output_filename , "w");
-                        if(output_file == NULL){
-                            error = 3;
-                            exit(error);
-                        }
-                        for (int i = 0 ; i < NMB_DATES ; i++){
-                            for (int j = 0 ; j < NMB_STATIONS ; j++){
-                                if(tab[i][j] -> pass == 1){
-                                    fprintf(output_file , "%d,%s,%lf\n" , tab[i][j] -> id , tab[i][j] -> date , tab[i][j] -> data);
-                                }
-                            }
-                        }
-                        fclose(output_file);
-                        free(tab);
+                        // // sort all the Data_Set* tabs of tab by id
+                        // for (int i = 0 ; i < NMB_DATES ; i++){
+                        //     qsort(tab[i] , NMB_STATIONS , sizeof(Data_Set*) , compare_id);
+                        // }
+                        // end = time(NULL);
+
+                    //     // // write the result in a file
+                    //     printf("Writing the sorting result in a file...");
+                    //     output_file = fopen(output_filename , "w");
+                    //     if(output_file == NULL){
+                    //         error = 3;
+                    //         exit(error);
+                    //     }
+                    //     for (int i = 0 ; i < NMB_DATES ; i++){
+                    //         print_data_set_tab(tab[i] , NMB_STATIONS , r_option_state , mode , &count , output_file);
+                    //     }
+                    //     fclose(output_file);
+                    //     printf("DONE\n");
+                    //     free(tab);
                     } 
-                
-                    elapsed = end - start;
-                    printf("Temps écoulé : %f secondes\n", elapsed);  
+
+                    // elapsed = end - start;
+                    // printf("Sorting time : %f seconds\n", elapsed);  
                 }
 
                 //------------------------------------- SORT BY DATA -------------------------------------//
@@ -1118,7 +1192,8 @@ int main(int argc, char *argv[]){
 
                     //--------------------------- *-h/*-m | min : 0 , max : 1 , average : 0 ---------------------------//
                     if(average_option_state == 0 && minimum_option_state == 0 && maximum_option_state == 1){
-
+                        
+                        mode = 1;
                         start = time(NULL);
 
                         // tab of data_set allocation
@@ -1130,7 +1205,7 @@ int main(int argc, char *argv[]){
                         // fill tab_data_set with all the single ID
                         id_file = fopen(id_filename , "r");
                         if(id_file == NULL){
-                            error = 2;
+                            error = 4;
                             exit(error);
                         }
                         while (fgets(id_line , sizeof(id_line) , id_file) != NULL) {
@@ -1167,18 +1242,19 @@ int main(int argc, char *argv[]){
                         end = time(NULL);
 
                         // write the result in a file
+                        printf("Writing the sorting result in a file...");
                         output_file = fopen(output_filename , "w");
                         if(output_file == NULL){
                             error = 3;
                             exit(error);
                         }
-                        print_data_set_tab(tab_data_set , NMB_STATIONS , r_option_state , output_file);
-                        
+                        print_data_set_tab(tab_data_set , NMB_STATIONS , r_option_state , mode , &count , output_file);
                         fclose(output_file);
+                        printf("DONE\n");
                     }
                 
                     elapsed = end - start;
-                    printf("Temps écoulé : %f secondes\n", elapsed);
+                    printf("Sorting time : %f seconds\n", elapsed);
                 }
             }
         }

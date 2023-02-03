@@ -11,6 +11,8 @@ int compare_int (const void * a, const void * b);
 
 bool binary_search_date(char* array[] , int size , char* value , int* index);
 
+bool binary_search_id(int array[] , int size , int value , int* index);
+
 bool binary_search_data_set_ID(Data_Set* array[] , int size , int value , int* index);
 
 bool binary_search_data_set_date(Data_Set* array[] , int size , char* value , int* index);

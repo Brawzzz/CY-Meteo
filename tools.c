@@ -56,29 +56,7 @@ bool binary_search_data_set_ID(Data_Set* array[] , int size , int value , int* i
     return false;
 }
 
-// binary search algorithme for date (for a tab of char*)
-bool binary_search_date(char* array[] , int size , char* value , int* index) {
-    int low = 0;
-    int high = size - 1;
-
-    while (low <= high){
-
-        *index = (low + high) / 2;
-
-        if (strcmp(array[*index] , value) == 0){
-            return true;
-        }
-        else if (strcmp(array[*index] , value) < 0){
-            low = *index + 1;
-        }
-        else{
-            high = *index - 1;
-        }
-    }
-    return false;
-}
-
-// binary search algorithme for date (for a tab of Data_Set*)
+// binary search algorithme for date in a tab of Data_Set*
 bool binary_search_data_set_date(Data_Set* array[] , int size , char* value , int* index) {
     int low = 0;
     int high = size - 1;
@@ -100,7 +78,7 @@ bool binary_search_data_set_date(Data_Set* array[] , int size , char* value , in
     return false;
 }
 
-// binary search algorithme for date (for a tab of tab of Data_Set*)
+// binary search algorithme for date in a tab of tab of Data_Set*
 bool binary_search_tab_date(Data_Set** array[] , int size , char* value , int* index) {
     int low = 0;
     int high = size - 1;
@@ -113,6 +91,72 @@ bool binary_search_tab_date(Data_Set** array[] , int size , char* value , int* i
             return true;
         }
         else if (strcmp(array[*index][0] -> date , value) < 0){
+            low = *index + 1;
+        }
+        else{
+            high = *index - 1;
+        }
+    }
+    return false;
+}
+
+// 
+bool binary_search_hour(Data_Set*** array[] , int size , char* value , int* index) {
+    int low = 0;
+    int high = size - 1;
+
+    while (low <= high){
+
+        *index = (low + high) / 2;
+
+        if (strcmp(array[*index][0][0] -> date , value) == 0){
+            return true;
+        }
+        else if (strcmp(array[*index][0][0] -> date , value) < 0){
+            low = *index + 1;
+        }
+        else{
+            high = *index - 1;
+        }
+    }
+    return false;
+}
+
+// binary search algorithme for id in a tab of int
+bool binary_search_id(int array[] , int size , int value , int* index) {
+    int low = 0;
+    int high = size - 1;
+
+    while (low <= high){
+
+        *index = (low + high) / 2;
+
+        if (array[*index] == value){
+            return true;
+        }
+        else if (array[*index] < value){
+            low = *index + 1;
+        }
+        else{
+            high = *index - 1;
+        }
+    }
+    return false;
+}
+
+// binary search algorithme for date in a tab of char*
+bool binary_search_date(char* array[] , int size , char* value , int* index) {
+    int low = 0;
+    int high = size - 1;
+
+    while (low <= high){
+
+        *index = (low + high) / 2;
+
+        if (strcmp(array[*index] , value) == 0){
+            return true;
+        }
+        else if (strcmp(array[*index] , value) < 0){
             low = *index + 1;
         }
         else{
