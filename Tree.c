@@ -174,8 +174,8 @@ void reverse_in_fixe_search(p_tree t , FILE* file , int mode , int* c){
     }
     else{
         if (mode == 1){
-            if(has_left_son(t)){
-                reverse_in_fixe_search(t -> left_son , file , mode , c);
+            if(has_right_son(t)){
+                reverse_in_fixe_search(t -> right_son , file , mode , c);
             }
 
             if((t -> element) -> pass == 1){
@@ -184,13 +184,13 @@ void reverse_in_fixe_search(p_tree t , FILE* file , int mode , int* c){
                 *c += 1;
             }
 
-            if(has_right_son(t)){
-                reverse_in_fixe_search(t -> right_son , file , mode , c);
+            if(has_left_son(t)){
+                reverse_in_fixe_search(t -> left_son , file , mode , c);
             }
         }
         else{
-            if(has_left_son(t)){
-                reverse_in_fixe_search(t -> left_son , file , mode , c);
+            if(has_right_son(t)){
+                reverse_in_fixe_search(t -> right_son , file , mode , c);
             }
 
             if((t -> element) -> pass == 1){
@@ -199,8 +199,8 @@ void reverse_in_fixe_search(p_tree t , FILE* file , int mode , int* c){
                 *c += 1;
             }
 
-            if(has_right_son(t)){
-                reverse_in_fixe_search(t -> right_son , file , mode , c);
+            if(has_left_son(t)){
+                reverse_in_fixe_search(t -> left_son , file , mode , c);
             }
         }
     }
@@ -723,17 +723,34 @@ p_tree insert_AVL_by_date(p_tree t , Data_Set* element , int mode , int* h){
 }
 
 // Insert a new nodes by max
-p_tree insert_AVL_by_max(p_tree t , Data_Set* element){
+p_tree insert_AVL_by_max(p_tree t , Data_Set* element , int* h){
     
     if (t == NULL){
+        *h = 1;
         t = create_tree(element);
         return t;
     }
     else if ((t -> element) -> max >= element -> max){
-        t -> left_son = insert_AVL_by_max(t -> left_son , element);
+        t -> left_son = insert_AVL_by_max(t -> left_son , element , h);
+        *h = -*h;
     }
     else  if ((t -> element) -> max < element -> max){
-        t -> right_son = insert_AVL_by_max(t -> right_son , element);
+        t -> right_son = insert_AVL_by_max(t -> right_son , element , h);
+    }
+
+    else{
+        *h = 0;
+        return t;
+    }
+    if(*h != 0){
+        t -> equilibre += *h;
+        t = balance_AVL(t);
+        if(t -> equilibre == 0){
+            *h = 0;
+        }
+        else{
+            *h = 1;
+        }
     }
 
     return t;
@@ -750,7 +767,8 @@ void insert_AVL_by_max_from_id(p_tree t1 , p_tree* t2){
             insert_AVL_by_max_from_id(t1 -> left_son , t2);
         }
 
-        *t2 = insert_AVL_by_max(*t2 , t1 -> element);
+        int balance = 0;
+        *t2 = insert_AVL_by_max(*t2 , t1 -> element , &balance);
 
         if(has_right_son(t1)){
             insert_AVL_by_max_from_id(t1 -> right_son , t2);

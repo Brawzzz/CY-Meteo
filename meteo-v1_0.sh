@@ -255,15 +255,17 @@ fi
 
 # Write result into the final file
 if [[ -f $out_file ]] ; then 
-	echo "Removing the header..."
+	echo -n "Removing the header..."
 	tail -n +2 $out_file > $tmp_out_file
 	mv $tmp_out_file $result_file
 	rm $out_file
+	echo "DONE"
 
 else
-	echo "Removing the header..."
+	echo -n "Removing the header..."
 	tail -n +2 $file > $tmp_out_file
 	mv $tmp_out_file $result_file
+	echo "DONE"
 fi
 echo
 
@@ -272,7 +274,7 @@ echo
 c_name="sort"
 if [[ ! -f $c_name ]] ; then
 	echo "C programm not found, launching Makefile..."
-	if [[ ! -f "Makefile" ]] ; then
+	if [[ ! -f "makefile" ]] ; then
 		echo "Error : Makefile not found" >&2
 		exit 1
 	else

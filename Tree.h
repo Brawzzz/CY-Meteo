@@ -80,7 +80,7 @@ p_tree insert_AVL_by_ID(p_tree t , Data_Set* element , int* h , int mode);
 
 p_tree insert_AVL_by_date(p_tree t , Data_Set* element , int mode , int* h);
 
-p_tree insert_AVL_by_max(p_tree t , Data_Set* element);
+p_tree insert_AVL_by_max(p_tree t , Data_Set* element , int* h);
 
 void insert_AVL_by_max_from_id(p_tree t1 , p_tree* t2);
 

@@ -1,5 +1,5 @@
 #define NMB_STATIONS 62
-#define NMB_DATES 37227
+#define NMB_DATES 4656
 #define NMB_HOURS 24
 #define M_PI 3.14159265358979323846
 
@@ -1238,6 +1238,7 @@ int main(int argc, char *argv[]){
                         }
                         fclose(input_file);
 
+                        // Sort tab_data_set by max
                         qsort(tab_data_set , NMB_STATIONS , sizeof(Data_Set*) , compare_max);
                         end = time(NULL);
 
