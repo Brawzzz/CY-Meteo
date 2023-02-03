@@ -1,21 +1,21 @@
 # --------------- CY-Météo --------------- #
 
-The purpose of this school prject is to treat a very big
+The purpose of this school project is to treat a very big
 meteorological datas file and make some graphs to represent 
 theses datas.
 
 # ------ How to use the application ------ #
 
 In order to know how you can use this application you can
-type the command ./filter.sh --help
+type the command ./meteo-v1_0.sh --help
 Here two exemples : 
 
-./meteo.sh -p2 -w -A -f data.csv
-./meteo.sh -A -f data.csv -p2 --avl -w  
+./meteo-v1_0.sh -p2 -w -A -f data.csv
+./meteo-v1_0.sh -A -f data.csv -p2 --avl -w  
 
 Theses two commands make the same result, a graph with 
 pression informations and another graph with wind 
-informations in the Antilles
+informations in the Antilles.
 
 # ------ Differents types of graphs -------- #
 
@@ -48,5 +48,11 @@ Moisture (-m) :
     corresponding to longitude (West-East axis) and the ordinate
     corresponding to latitude (North-South axis).
 
-# ---------------------------------------- #
+# -------------- NOT FINISH --------------- #
+- The options -t3/-p3 with sorting option tab dosent't work
+
+- Maybe we can adapt the xrange and the yrange for the graph  
+# ----------------------------------------- #
+
+
 
