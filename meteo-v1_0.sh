@@ -136,22 +136,39 @@ result_file="result.csv"
 
 date_file="dates.csv"
 id_coord_file="id_coord.csv"
+hours_file="hours.csv"
 tmp="tmp.csv"
+
+nmb_id=""
+nmb_dates=""
 
 if [[ ! -f $id_coord ]] && [[ ! -f $dates ]] ; then
 	if [[ $sorting == "--tab" ]] || [[ $sorting_file == "true" ]] ; then
 
-		echo "Computing necessary files for --tab or -t3/p3 options..."
+		echo -n "Computing necessary files for --tab or -t3/p3 options..."
 		tail -n +2 $file > $tmp
 		
 		# Make a file with all the single ID and the corresponding coordinates 
 		cut -d ";" -f 1,10 $tmp | sort -u >> $id_coord_file
 
 		# Make a file with all the single dates 
-		cut -d ";" -f 2 $tmp | sort -u >> $date_file
+		cut -d ";" -f 2 $tmp | sort -u >> "d.csv"
+		cut -d "T" -f 1 "d.csv" | sort -u >> $date_file
+
+		# Make a file with all the single hours
+		cut -d "T" -f 2 "d.csv" | sort -u >> "h1.csv"
+		cut -d ":" -f 1 "h1.csv" | sort -u >> $hours_file
+
+		i="echo $(wc -l $id_coord_file)"
+		d="echo $(wc -l $date_file)"
+
+		nmb_id=$($i | cut -d " " -f1)
+		nmb_dates=$($d | cut -d " " -f1)
 
 		echo "Done"
-		echo
+		echo 
+		
+		rm "h1.csv" "d.csv"
 	fi
 fi
 
@@ -309,7 +326,7 @@ for filter in "${filters[@]}"; do
 			fi
 			# Launch C programm
 			echo
-			./$c_name -f $filename -o result$nb_filter.csv --id --min --max --av $sorting
+			./$c_name -f $filename -o result$nb_filter.csv --id --min --max --av $sorting --NI $nmb_id --ND $nmb_dates
 			success=$?
 
 			echo
@@ -323,7 +340,7 @@ for filter in "${filters[@]}"; do
 			fi
 			# Launch C programm
 			echo
-			./$c_name -f $filename -o result$nb_filter.csv --date --av $sorting
+			./$c_name -f $filename -o result$nb_filter.csv --date --av $sorting --NI $nmb_id --ND $nmb_dates
 			success=$?
 
 			echo
@@ -333,7 +350,7 @@ for filter in "${filters[@]}"; do
 		;;
 		-t3)
 			if [[ ! -f $filename ]] ; then
-				cut -d ";" -f 1,2,11,10 $result_file | grep ";;;$" -v > $filename
+				cut -d ";" -f 1,2,11,10 $result_file | grep ";;;$" -v > $filename --NI $nmb_id --ND $nmb_dates
 			fi
 			# Launch C programm
 			echo
@@ -353,7 +370,7 @@ for filter in "${filters[@]}"; do
 			fi
 			# Launch C programm
 			echo
-			./$c_name -f $filename -o result$nb_filter.csv --id --min --max --av $sorting
+			./$c_name -f $filename -o result$nb_filter.csv --id --min --max --av $sorting --NI $nmb_id --ND $nmb_dates
 			success=$?
 			# Launch gnuplot script
 			echo
@@ -369,7 +386,7 @@ for filter in "${filters[@]}"; do
 			fi
 			# Launch C programm
 			echo
-			./$c_name -f $filename -o result$nb_filter.csv --date --av $sorting
+			./$c_name -f $filename -o result$nb_filter.csv --date --av $sorting --NI $nmb_id --ND $nmb_dates
 			success=$?
 			# Launch gnuplot script
 			echo
@@ -385,7 +402,7 @@ for filter in "${filters[@]}"; do
 			fi
 			# Launch C programm
 			echo
-			./$c_name -f $filename -o result$nb_filter.csv --date $sorting
+			./$c_name -f $filename -o result$nb_filter.csv --date $sorting --NI $nmb_id --ND $nmb_dates
 			success=$?
 			# Launch gnuplot script
 			echo
@@ -399,7 +416,7 @@ for filter in "${filters[@]}"; do
 			fi
 			# Launch C programm
 			echo
-			./$c_name -f $filename -o result$nb_filter.csv --id --av $sorting
+			./$c_name -f $filename -o result$nb_filter.csv --id --av $sorting --NI $nmb_id --ND $nmb_dates
 			success=$?
 			# Launch gnuplot script
 			echo
@@ -413,7 +430,7 @@ for filter in "${filters[@]}"; do
 			fi
 			# Launch C programm
 			echo
-			./$c_name -f $filename -o result$nb_filter.csv --data --max -r $sorting
+			./$c_name -f $filename -o result$nb_filter.csv --data --max -r $sorting --NI $nmb_id --ND $nmb_dates
 			success=$?
 			# Launch gnuplot script
 			echo
@@ -429,7 +446,7 @@ for filter in "${filters[@]}"; do
 			fi
 			# Launch C programm
 			echo
-			./$c_name -f $filename -o result$nb_filter.csv --data --max -r $sorting
+			./$c_name -f $filename -o result$nb_filter.csv --data --max -r $sorting --NI $nmb_id --ND $nmb_dates
 			success=$?
 			# Launch gnuplot script
 			echo
@@ -471,7 +488,7 @@ for filter in "${filters[@]}"; do
 done
 
 if [[ -f $id_coord_file ]] && [[ -f $date_file ]] ; then
-	rm $id_coord_file $date_file $tmp
+	rm $id_coord_file $date_file $tmp $hours_file
 fi
 
 echo

@@ -165,3 +165,28 @@ bool binary_search_date(char* array[] , int size , char* value , int* index) {
     }
     return false;
 }
+
+void set(PData_Set* tab, int i , int j , int k , int nbi, int nbj, int nbk, Data_Set* ptr) {
+    if ( ( ( i >= 0 ) && ( i < nbi ) ) && ( ( j >= 0 ) && ( j < nbj ) ) && ( ( k >= 0 ) && ( k < nbk ) ) ) {
+        tab[i + j*nbi + k*nbj*nbi] = ptr;
+    }
+    else {
+        fprintf(stderr,"(set)#ERROR : index out of range\n");
+        fflush(stderr);
+    }
+}
+
+Data_Set* get(PData_Set* tab, int i , int j , int k , int nbi, int nbj, int nbk) {
+    Data_Set* res = NULL;
+    if ( ( ( i >= 0 ) && ( i < nbi ) ) && ( ( j >= 0 ) && ( j < nbj ) ) && ( ( k >= 0 ) && ( k < nbk ) ) ) {
+        //fprintf(stderr,"(get)OK : %d,%d,%d\n",i,j,k);
+        //fflush(stderr);
+        res = tab[i + j*nbi + k*nbj*nbi];
+    }
+    else {
+        fprintf(stderr,"(get)#ERROR : index out of range : %d,%d,%d\n",i,j,k);
+        fflush(stderr);
+    }
+    return res;
+}
+    

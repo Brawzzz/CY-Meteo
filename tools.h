@@ -19,4 +19,8 @@ bool binary_search_data_set_date(Data_Set* array[] , int size , char* value , in
 
 bool binary_search_tab_date(Data_Set** array[] , int size , char* value , int* index);
 
+void set(Data_Set** tab, int i , int j , int k , int nbi, int nbj, int nbk, Data_Set* ptr);
+
+Data_Set* get(Data_Set** tab, int i , int j , int k , int nbi, int nbj, int nbk);
+
 #endif

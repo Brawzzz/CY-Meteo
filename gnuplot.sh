@@ -13,11 +13,11 @@ case $filter in
 		    	set title "Temperature per stations"
 		   		set xlabel "Stations"
 		    	set ylabel "Temperature"
-		    	set datafile separator ","
-		    	set xrange [-1:63]                           
+		    	set datafile separator ","                          
 		    	set yrange [-40:70]   
 		    	set xtics font ",6" 
 		    	set colorbox vertical origin screen 0.9, 0.2 size screen 0.05, 0.6 front  noinvert bdefault
+				set xtics rotate by 45  
 		    	plot "$file" using 1:8:6:7:xtic(2) with errorbars pt 7 ps 2 
 		EOF
 		echo "DONE"
@@ -32,13 +32,12 @@ case $filter in
 		    set xlabel "Dates"
 		    set ylabel "Temperature"
 		    set datafile separator ","
-		    set xdata time      
-		    set format x "%d/%H"                                  
-		    set timefmt "%Y-%m-%dT%H:%M:%S"
-		    set xrange ["2010-01-01T01:00:00+01:00":"2022-09-30T20:00:00+02:00"]    
+		    set xdata time        
 		    set yrange [-40:70]                                        
 		    set timefmt "%Y-%m-%dT%H:%M:%S"                        
-		    set format x "%Y/%m/%d"                                    
+		    set format x "%Y/%m/%d"
+			set xtics offset 1,0.25 right
+			set xtics rotate by 45                                    
 		    plot "$file"  every 10 using 3:8 lt 5 lc 0 pt 27 w lp
 		EOF
 		echo "DONE"
@@ -53,73 +52,74 @@ case $filter in
 			set title "Temperature per dates"                                                  
 			set xlabel "Dates"                                                                
 			set ylabel "Temperature"                                                          
-			set xdata time                                                                    
-			set timefmt "%Y-%m-%dT%H:%M:%S"                                                    
-			set xrange ["2010-01-01T01:00:00+01:00":"2022-09-30T20:00:00+02:00"]              
+			set xdata time  
+			set key off                                                                                                                                    
 			set yrange [-40:70]                                                                
 			set timefmt "%Y-%m-%dT%H:%M:%S"                                                    
 			set format x "%Y-%m-%d"
-			set palette rgb 33,13,10                                             
+			set palette rgb 33,13,10
+			set xtics offset 1,0.25 right
+			set xtics rotate by 45
 			plot "$file" every 100 u 3:5:4 w l palette
 		EOF
 		echo "DONE"
 	;;
 	p1)
-		echo -n "Computing t1 graph..."
+		echo -n "Computing p1 graph..."
 		gnuplot <<- EOF
 		    	reset
 		    	set terminal png
 		    	set output 'p1_graph.png'
 		    	set title "Pressure per stations"
 		   		set xlabel "Stations"
-		    	set ylabel "Temperature"
-		    	set datafile separator ","
-		    	set xrange [-1:63]                           
+		    	set ylabel "Pressure"
+		    	set datafile separator ","                          
 		    	set yrange [90000:110000]    
 		    	set xtics font ",6" 
 		    	set colorbox vertical origin screen 0.9, 0.2 size screen 0.05, 0.6 front  noinvert bdefault
+				set xtics offset 1,0.25 right
+				set xtics rotate by 45
 		    	plot "$file" using 1:8:6:7:xtic(2) with errorbars pt 7 ps 2 
 		EOF
 		echo "DONE"
 	;;
 	p2)
-        	echo -n "Computing t2 graph..."
+        	echo -n "Computing p2 graph..."
 		gnuplot <<- EOF
 		    reset
 		    set terminal png
 		    set output 'p2_graph.png'
 		    set title "Averrage Pressure per dates"
 		    set xlabel "Dates"
-		    set ylabel "Temperature"
+		    set ylabel "Pressure"
 		    set datafile separator ","
-		    set xdata time      
-		    set format x "%d/%H"                                  
-		    set timefmt "%Y-%m-%dT%H:%M:%S"
-		    set xrange ["2010-01-01T01:00:00+01:00":"2022-09-30T20:00:00+02:00"]    
+		    set xdata time         
 		    set yrange [90000:110000]                                        
 		    set timefmt "%Y-%m-%dT%H:%M:%S"                        
-		    set format x "%Y/%m/%d"                                    
+		    set format x "%Y/%m/%d"
+			set xtics offset 1,0.25 right  
+			set xtics rotate by 45                                  
 		    plot "$file"  every 10 using 3:8 lt 5 lc 0 pt 27 w lp
 		EOF
 		echo "DONE"
 	;;
 	p3)
-		echo -n "Computing t3 graph..."
+		echo -n "Computing p3 graph..."
 		gnuplot <<- EOF
 			reset
 		    set terminal png
 		    set output 'p3_graph.png'
 			set datafile separator ","                                                        
-			set title "TPressure per dates"                                                  
+			set title "Pressure per dates"                                                  
 			set xlabel "Dates"                                                                
-			set ylabel "Temperature"                                                          
-			set xdata time                                                                    
-			set timefmt "%Y-%m-%dT%H:%M:%S"                                                    
-			set xrange ["2010-01-01T01:00:00+01:00":"2022-09-30T20:00:00+02:00"]              
+			set ylabel "Pressure"                                                          
+			set xdata time                                                                                
 			set yrange [90000:110000]                                                                
 			set timefmt "%Y-%m-%dT%H:%M:%S"                                                    
 			set format x "%Y-%m-%d"
-			set palette rgb 33,13,10                                             
+			set palette rgb 33,13,10
+			set xtics offset 1,0.25 right
+			set xtics rotate by 45                                             
 			plot "$file" every 100 u 3:5:4 w l palette
 		EOF
 		echo "DONE"
@@ -134,7 +134,7 @@ case $filter in
 		    set xlabel "Longitude"
 		    set ylabel "Latitude"
 		    set size ratio 1
-		    set xrange [-100:200]                           
+		    set xrange [-180:180]                           
 		    set yrange [-100:200]
 		    set datafile sep ','
 		    unset key
@@ -149,6 +149,12 @@ case $filter in
 		    reset 
 		    set terminal png
 		    set output 'h_graph.png'
+			set title "Altitude per stations"
+		    set xlabel "Longitude"
+		    set ylabel "Latitude"
+			set xrange [-180:180]                           
+		    set yrange [-100:200]
+			set key off
 		    set contour base
 		    set pm3d
 		    unset surface
@@ -166,6 +172,9 @@ case $filter in
 		    reset 
 		    set terminal png
 		    set output 'm_graph.png'
+			set xrange [-180:180]                           
+		    set yrange [-100:200]
+			set key off
 		    set contour base
 		    set pm3d
 		    unset surface

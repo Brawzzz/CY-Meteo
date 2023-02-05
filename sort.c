@@ -1,5 +1,5 @@
-#define NMB_STATIONS 62
-#define NMB_DATES 4656
+// #define NMB_STATIONS 62
+// #define NMB_DATES 4656
 #define NMB_HOURS 24
 #define M_PI 3.14159265358979323846
 
@@ -11,8 +11,13 @@ int main(int argc, char *argv[]){
     
     int error = 0;
 
+    int NMB_DATES = 0;
+    int NMB_STATIONS = 0;
+
     FILE* id_file = NULL;
     FILE* date_file = NULL;
+    FILE* hour_file = NULL;
+
     FILE* input_file = NULL;
     FILE* output_file = NULL;
 
@@ -25,6 +30,8 @@ int main(int argc, char *argv[]){
 
     char* id_filename = "id_coord.csv";
     char* date_filename = "dates.csv";
+    char* hour_filename = "hours.csv";
+
     char* input_filename = NULL;;
     char* output_filename = NULL;
     
@@ -47,13 +54,13 @@ int main(int argc, char *argv[]){
 
     char id_line[1024];
     char date_line[1024];
+    char hour_line[1024];
     char data_line[1024];
 
     char** dates = NULL;
     char* dates_i = NULL;
 
-    char* hours = NULL;
-
+    int* hour = NULL;
     int* id_s = NULL;
 
     double elapsed = 0.f;
@@ -128,6 +135,19 @@ int main(int argc, char *argv[]){
                 o_option_state = 1;
                 if (i + 1 < argc) {
                     o_option = argv[i + 1];
+                }
+            }
+
+            // Check for -NI option
+            if (strcmp(argv[i], "--NI") == 0) {
+                if (i + 1 < argc) {
+                    sscanf(argv[i + 1] , "%d" , &NMB_STATIONS);
+                }
+            }
+            // Check for -ND option
+            if (strcmp(argv[i], "--ND") == 0) {
+                if (i + 1 < argc) {
+                    sscanf(argv[i + 1] , "%d" , &NMB_DATES);
                 }
             }
 
@@ -207,7 +227,8 @@ int main(int argc, char *argv[]){
             printf("reverse option : %d\n" , r_option_state);
 
             printf("id option : %d ; date option : %d , data option : %d\n", ID_option_state , date_option_state , data_option_state);
-            printf("min option : %d ; max option : %d , average option : %d\n\n", minimum_option_state , maximum_option_state , average_option_state);
+            printf("min option : %d ; max option : %d , average option : %d\n", minimum_option_state , maximum_option_state , average_option_state);
+            printf("NMB_STATION : %d ; NMB_DATES : %d\n\n",NMB_STATIONS , NMB_DATES);
 
             printf("Sorting in progress...\n");
             //-------------------------------------- NO SORT OPTIONS / *--avl BY DEFAULT --------------------------------------//
@@ -358,7 +379,7 @@ int main(int argc, char *argv[]){
                         mode = 1;
                         int index_2 = 0;
                         start = time(NULL);
-
+                        
                         // tab of all single hours
                         char* hours[NMB_HOURS] = {"00" , "01" , "02" , "03" , "04" , "05" , 
                                            "06" , "07" , "08" , "09" , "10" , "11" , 
@@ -418,7 +439,7 @@ int main(int argc, char *argv[]){
                             data_set = create_data_set(ID , complete_date , data , 0 , 0 , 0 , 0 , 0 , 0);
                     
                             // resarch complete_date in the tab of p_tree 
-                            if(binary_search_tree_hour(tmp_trees , 24 , data_set -> hour , &index)){
+                            if(binary_search_tree_hour(tmp_trees , NMB_HOURS , data_set -> hour , &index)){
                                 if(binary_search_tree_id(tmp_trees[index] , NMB_STATIONS , ID , &index_2)){
                                     tmp_trees[index][index_2] = insert_AVL_by_date(tmp_trees[index][index_2] , data_set , mode , &balance);
                                 } 
@@ -728,7 +749,7 @@ int main(int argc, char *argv[]){
                             data_set = create_data_set(ID , complete_date , data , 0 , 0 , 0 , 0 , 0 , 0);
                     
                             // resarch complete_date in the tab of p_tree 
-                            if(binary_search_tree_hour(tmp_trees , 24 , data_set -> hour , &index)){
+                            if(binary_search_tree_hour(tmp_trees , NMB_HOURS , data_set -> hour , &index)){
                                 if(binary_search_tree_id(tmp_trees[index] , NMB_STATIONS , ID , &index_2)){
                                     tmp_trees[index][index_2] = insert_ABR_by_date(tmp_trees[index][index_2] , data_set , mode);
                                 } 
@@ -1075,9 +1096,197 @@ int main(int argc, char *argv[]){
                     }
 
                     //--------------------------- *-t3/*-p3 | min : 0 , max : 0 , average : 0 ---------------------------//
-                    else if (average_option_state == 0 && minimum_option_state == 0 && maximum_option_state == 0){   
-                        printf("Dosen't work for the moment...\n");
-                    }
+                    else if (average_option_state == 0 && minimum_option_state == 0 && maximum_option_state == 0){
+                        
+                        i = 0;
+                        int index_2 = 0;
+                        int c = 0;
+                        int h = 0;
+                        start = time(NULL);
+
+                        // tab of id allocation
+                        id_s = (int*)malloc(NMB_STATIONS * sizeof(int));
+                        if (id_s == NULL){
+                            error = 4;
+                            exit(error);
+                        }
+                        // fill the is tab with alll the single id
+                        id_file = fopen(id_filename , "r");
+                        if (id_file == NULL){
+                            error = 4;
+                            exit(error);
+                        }
+                        while (fgets(id_line , sizeof(id_line) , id_file) != NULL) {
+                            sscanf(id_line , "%d" , &id_s[i]);
+                            i++;
+                        }
+                        fclose(id_file);
+                        
+                       // tab of dates allocation
+                        i = 0;
+                        char** dates = (char**)malloc(NMB_DATES * sizeof(char*));
+                        if (dates == NULL){
+                            error = 4;
+                            exit(error);
+                        }
+                        for (int i = 0 ; i < NMB_DATES ; i++){
+                            char* dates_i = (char*)malloc(26 * sizeof(char));
+                            if (dates_i == NULL){
+                                error = 4;
+                                exit(error);
+                            }
+                            memset(dates_i , 0 , sizeof(dates_i));
+                            dates[i] = dates_i;
+                        }
+                        // fill dates tab with all the single dates
+                        date_file = fopen(date_filename , "r");
+                        if(date_file == NULL){
+                            error = 4;
+                            exit(error);
+                        }
+                        while (fgets(date_line , sizeof(date_line) , date_file) != NULL) {
+                            sscanf(date_line , "%s" , dates[i]);
+                            i++;
+                        }
+                        fclose(date_file);
+
+                        // tab of hours allocation
+                        hour = (int*)malloc(NMB_HOURS * sizeof(int));
+                        if (hour == NULL){
+                            error = 4;
+                            exit(error);
+                        }
+                        // fill hours tab with all the single hour
+                        i = 0;
+                        hour_file = fopen(hour_filename , "r");
+                        if(hour_file == NULL){
+                            error = 2;
+                            exit(error);
+                        }
+                        while (fgets(hour_line , sizeof(hour_line) , hour_file) != NULL) {
+                            sscanf(hour_line , "%d" , &h);
+                            hour[i] = h;
+                            i++;
+                        }
+                        fclose(hour_file);
+                        
+                        // Allocates a tab of data_set* of size NMB_STATIONS * NMB_DATES * NMB_HOURS
+                        PData_Set* tab3D = (PData_Set*)malloc((NMB_STATIONS * NMB_DATES * NMB_HOURS)*sizeof(PData_Set));
+                        if (tab3D == NULL){
+                            error = 4;
+                            exit(error);
+                        }
+
+                         for (int k = 0 ; k < NMB_HOURS ; k++){
+                            for (int j = 0 ; j < NMB_DATES ; j++){
+                                for (int i = 0 ; i < NMB_STATIONS ; i++){
+                                    tab3D[i+j*NMB_STATIONS+k*NMB_DATES*NMB_STATIONS] = NULL;
+                                }
+                            }
+                        }
+                        
+                        // start reading the input file and update tab3D
+                        input_file = fopen(input_filename , "r+");
+                        if(input_file == NULL){
+                            error = 2;
+                            exit(error);
+                        } 
+                        while (fgets(data_line, sizeof(data_line) , input_file) != NULL) {
+                            
+                            sscanf(data_line , "%d;%[^;];%lf,%lf;%lf" , &ID , complete_date , &x , &y , &data);
+                            data_set = create_data_set(ID , complete_date , data , 0 , 0 , 0 , 0 , 0 , 0);
+                            sscanf(data_set -> hour , "%d" , &h);
+
+                            int index_station = -1;
+                            int index_date = -1;
+                            int index_hour = -1;
+
+                            // Search the index of ID date & h
+                            binary_search_id(id_s , NMB_STATIONS , ID , &index_station);
+                            binary_search_date(dates , NMB_DATES , data_set -> date , &index_date);
+                            binary_search_id(hour , NMB_HOURS , h , &index_hour);
+
+                            //printf("%d , %d , %d\n", index_station , index_date , index_hour);
+
+                            set(tab3D, index_station, index_date, index_hour, NMB_STATIONS, NMB_DATES, NMB_HOURS , data_set);
+        
+                        }
+                        fclose(input_file);
+                        end = time(NULL);
+
+                        // write the result in a file
+                        printf("Writing the sorting result in a file...\n");
+                        output_file = fopen(output_filename , "w");
+                        if(output_file == NULL){
+                            error = 3;
+                            exit(error);
+                        }
+                        if (r_option_state == 1){
+                            for (int i = NMB_STATIONS-1 ; i >= 0 ; i--){
+                                for (int k = NMB_HOURS-1  ; k >= 0 ; k--){
+                                    for (int j = NMB_DATES-1 ; j >= 0 ; j--){
+
+                                        Data_Set* dataset = get(tab3D, i , j , k, NMB_STATIONS, NMB_DATES, NMB_HOURS);
+                                        if ( dataset != NULL) {
+                                        
+                                            int id_i = dataset -> id;
+                                            char* d_i = dataset -> date;
+                                            char* h_i = dataset -> hour; 
+                                            double data_i = dataset -> data;
+                                            double min_i = dataset -> min;
+                                            double max_i = dataset -> max;
+                                            double average_i = dataset -> average;
+                                            double average1_i = dataset -> average_1;
+                                            double x_i = dataset -> x ;
+                                            double y_i = dataset -> y;
+                                            
+                                            fprintf(output_file , "%d,%d,%s,%s,%lf,%lf,%lf,%lf,%lf,%lf,%lf\n", c , id_i , d_i , h_i , data_i , min_i , max_i , average_i , average1_i , x_i , y_i);
+                                        }
+                                        else {
+                                            //fprintf(stderr,"#ERROR : NULL pointer");
+                                            //fflush(stderr);
+                                        }
+                                    }
+                                }
+                                fprintf(output_file , "\n");
+                            }
+                        }
+                        else{
+                            for (int i = 0 ; i < NMB_STATIONS ; i++){
+                                for (int k = 0 ; k < NMB_HOURS ; k++){
+                                    for (int j = 0 ; j < NMB_DATES ; j++){
+
+                                        Data_Set* dataset = get(tab3D, i , j , k, NMB_STATIONS, NMB_DATES, NMB_HOURS);
+                                        if ( dataset != NULL) {
+                                        
+                                            int id_i = dataset -> id;
+                                            char* d_i = dataset -> date;
+                                            char* h_i = dataset -> hour; 
+                                            double data_i = dataset -> data;
+                                            double min_i = dataset -> min;
+                                            double max_i = dataset -> max;
+                                            double average_i = dataset -> average;
+                                            double average1_i = dataset -> average_1;
+                                            double x_i = dataset -> x ;
+                                            double y_i = dataset -> y;
+                                            fprintf(output_file , "%d,%d,%s,%s,%lf,%lf,%lf,%lf,%lf,%lf,%lf\n", c , id_i , d_i , h_i , data_i , min_i , max_i , average_i , average1_i , x_i , y_i);
+                                        }
+                                        else {
+                                            //fprintf(stderr,"#ERROR : NULL pointer\n");
+                                            //fflush(stderr);
+                                        }
+                                    }
+                                }
+                                fprintf(output_file , "\n");
+                            }
+                        }
+                        fclose(output_file);
+                        printf("DONE\n");
+                        free(tab3D);
+                    } 
+
+                    elapsed = end - start;
+                    printf("Sorting time : %f seconds\n", elapsed);  
                 }
 
                 //------------------------------------- SORT BY DATA -------------------------------------//

@@ -37,6 +37,8 @@ typedef struct{
     
 }Data_Set;
 
+typedef Data_Set* PData_Set;
+
 Data_Set* create_set();
 
 Data_Set* create_data_set(int id , char* date , double data , double d_x , double d_y , double min , double max , double x , double y);
