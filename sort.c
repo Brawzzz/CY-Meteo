@@ -1222,8 +1222,8 @@ int main(int argc, char *argv[]){
                             exit(error);
                         }
                         if (r_option_state == 1){
-                            for (int i = NMB_STATIONS-1 ; i >= 0 ; i--){
-                                for (int k = NMB_HOURS-1  ; k >= 0 ; k--){
+                            for (int k = NMB_HOURS-1  ; k >= 0 ; k--){
+                                for (int i = NMB_STATIONS-1 ; i >= 0 ; i--){
                                     for (int j = NMB_DATES-1 ; j >= 0 ; j--){
 
                                         Data_Set* dataset = get(tab3D, i , j , k, NMB_STATIONS, NMB_DATES, NMB_HOURS);
@@ -1252,8 +1252,8 @@ int main(int argc, char *argv[]){
                             }
                         }
                         else{
-                            for (int i = 0 ; i < NMB_STATIONS ; i++){
-                                for (int k = 0 ; k < NMB_HOURS ; k++){
+                            for (int k = 0 ; k < NMB_HOURS ; k++){
+                                for (int i = 0 ; i < NMB_STATIONS ; i++){
                                     for (int j = 0 ; j < NMB_DATES ; j++){
 
                                         Data_Set* dataset = get(tab3D, i , j , k, NMB_STATIONS, NMB_DATES, NMB_HOURS);
@@ -1269,6 +1269,7 @@ int main(int argc, char *argv[]){
                                             double average1_i = dataset -> average_1;
                                             double x_i = dataset -> x ;
                                             double y_i = dataset -> y;
+
                                             fprintf(output_file , "%d,%d,%s,%s,%lf,%lf,%lf,%lf,%lf,%lf,%lf\n", c , id_i , d_i , h_i , data_i , min_i , max_i , average_i , average1_i , x_i , y_i);
                                         }
                                         else {
@@ -1276,6 +1277,7 @@ int main(int argc, char *argv[]){
                                             //fflush(stderr);
                                         }
                                     }
+                                    fprintf(output_file , "\n");
                                 }
                                 fprintf(output_file , "\n");
                             }

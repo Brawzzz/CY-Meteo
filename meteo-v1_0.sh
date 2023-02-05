@@ -350,11 +350,11 @@ for filter in "${filters[@]}"; do
 		;;
 		-t3)
 			if [[ ! -f $filename ]] ; then
-				cut -d ";" -f 1,2,11,10 $result_file | grep ";;;$" -v > $filename --NI $nmb_id --ND $nmb_dates
+				cut -d ";" -f 1,2,11,10 $result_file | grep ";;;$" -v > $filename
 			fi
 			# Launch C programm
 			echo
-			./$c_name -f $filename -o result$nb_filter.csv --date $sorting
+			./$c_name -f $filename -o result$nb_filter.csv --date $sorting --NI $nmb_id --ND $nmb_dates
 			success=$?
 			# Launch gnuplot script
 			echo
