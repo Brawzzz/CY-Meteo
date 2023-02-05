@@ -139,6 +139,8 @@ id_coord_file="id_coord.csv"
 hours_file="hours.csv"
 tmp="tmp.csv"
 
+graphs_directory="GRAPHS"
+
 nmb_id=""
 nmb_dates=""
 
@@ -330,7 +332,7 @@ for filter in "${filters[@]}"; do
 			success=$?
 
 			echo
-			if [ -f result$nb_filter.csv ] ; then
+			if [ -f result$nb_filter.csv ]; then
 				./gnuplot.sh t1 result$nb_filter.csv
 			fi
 		;;
@@ -484,9 +486,20 @@ for filter in "${filters[@]}"; do
 		esac
 		exit $success
 	fi
+	
 	((nb_filter++))
 done
 
+# Move the graph into the correct directory
+if [ -d $graphs_directory ]; then
+	mv *.png $graphs_directory
+else
+	mkdir $graphs_directory
+	mv *.png $graphs_directory
+		
+fi
+
+# Delete all the temporary file 
 if [[ -f $id_coord_file ]] && [[ -f $date_file ]] ; then
 	rm $id_coord_file $date_file $tmp $hours_file
 fi
