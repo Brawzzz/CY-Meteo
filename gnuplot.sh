@@ -8,10 +8,10 @@ case $filter in
 		echo -n "Computing t1 graph..."
 		gnuplot <<- EOF
 		    	reset
-		    	set terminal png
+		    	set terminal png size 1920,1080
 		    	set output 't1_graph.png'
 		    	set title "Temperature per stations"
-		   	set xlabel "Stations"
+		   		set xlabel "Stations"
 		    	set ylabel "Temperature"
 		    	set datafile separator ","                          
 		    	set yrange [-40:70]   
@@ -28,7 +28,7 @@ case $filter in
         	echo -n "Computing t2 graph..."
 		gnuplot <<- EOF
 		    reset
-		    set terminal png
+		    set terminal png size 1920,1080
 		    set output 't2_graph.png'
 		    set title "Averrage Temperature per dates"
 		    set xlabel "Dates"
@@ -49,7 +49,7 @@ case $filter in
 		echo -n "Computing t3 graph..."
 		gnuplot <<- EOF
 			reset
-		    set terminal png
+		    set terminal png size 1920,1080
 		    set output 't3_graph.png'
 			set datafile separator ","                                                        
 			set title "Temperature per dates"                                                  
@@ -71,18 +71,18 @@ case $filter in
 		echo -n "Computing p1 graph..."
 		gnuplot <<- EOF
 		    	reset
-		    	set terminal png
+		    	set terminal png size 1920,1080
 		    	set output 'p1_graph.png'
 		    	set title "Pressure per stations"
-		   	set xlabel "Stations"
+		   		set xlabel "Stations"
 		    	set ylabel "Pressure"
 		    	set datafile separator ","                          
 		    	set yrange [90000:110000]    
 		    	set xtics font ",6" 
 		    	set colorbox vertical origin screen 0.9, 0.2 size screen 0.05, 0.6 front  noinvert bdefault
-			set xtics offset 1,0.25 right
-			set xtics rotate by 45
-			unset key
+				set xtics offset 1,0.25 right
+				set xtics rotate by 45
+				unset key
 		    	plot "$file" using 1:8:6:7:xtic(2) with errorbars pt 7 ps 2 
 		EOF
 		echo "DONE"
@@ -91,7 +91,7 @@ case $filter in
         	echo -n "Computing p2 graph..."
 		gnuplot <<- EOF
 		    reset
-		    set terminal png
+		    set terminal png size 1920,1080
 		    set output 'p2_graph.png'
 		    set title "Averrage Pressure per dates"
 		    set xlabel "Dates"
@@ -112,8 +112,8 @@ case $filter in
 		echo -n "Computing p3 graph..."
 		gnuplot <<- EOF
 			reset
-		    	set terminal png
-		    	set output 'p3_graph.png'
+		    set terminal png size 1920,1080
+		    set output 'p3_graph.png'
 			set datafile separator ","                                                        
 			set title "Pressure per dates"                                                  
 			set xlabel "Dates"                                                                
@@ -134,14 +134,12 @@ case $filter in
 		echo -n "Computing w graph..."
 		gnuplot <<- EOF
 		    reset
-		    set terminal png
+		    set terminal png size 1920,1080
 		    set output 'w_graph.png'
 		    set title "Wind direction"
 		    set xlabel "Longitude"
 		    set ylabel "Latitude"
 		    set size ratio 1
-		    set xrange [-180:180]                           
-		    set yrange [-100:200]
 		    set datafile sep ','
 		    unset key
 		    set palette rgb 33,13,10
@@ -153,7 +151,7 @@ case $filter in
         	echo -n "Computing h graph..."      
 		gnuplot <<- EOF
 		    reset 
-		    set terminal png
+		    set terminal png size 1920,1080
 		    set output 'h_graph.png'
 		    set title "Altitude per stations"
 		    set xlabel "Longitude"
@@ -174,7 +172,7 @@ case $filter in
 		echo -n "Computing m graph..."
 		gnuplot <<- EOF
 		    reset 
-		    set terminal png
+		    set terminal png size 1920,1080
 		    set output 'm_graph.png'
 		    set key off
 		    set title "Moisture max per stations"
