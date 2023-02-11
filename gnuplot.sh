@@ -11,10 +11,9 @@ case $filter in
 		    	set terminal png size 1920,1080
 		    	set output 't1_graph.png'
 		    	set title "Temperature per stations"
-		   		set xlabel "Stations"
+		   	set xlabel "Stations"
 		    	set ylabel "Temperature"
-		    	set datafile separator ","                          
-		    	set yrange [-40:70]   
+		    	set datafile separator ","                            
 		    	set xtics font ",6" 
 		    	set colorbox vertical origin screen 0.9, 0.2 size screen 0.05, 0.6 front  noinvert bdefault
 		    	set xtics offset 1,0.25 right
@@ -34,8 +33,7 @@ case $filter in
 		    set xlabel "Dates"
 		    set ylabel "Temperature"
 		    set datafile separator ","
-		    set xdata time        
-		    set yrange [-40:70]                                        
+		    set xdata time                                               
 		    set timefmt "%Y-%m-%dT%H:%M:%S"                        
 		    set format x "%Y/%m/%d"
 		    set xtics offset 1,0.25 right
@@ -56,8 +54,7 @@ case $filter in
 			set xlabel "Dates"                                                                
 			set ylabel "Temperature"                                                          
 			set xdata time  
-			set key off                                                                                                                                    
-			set yrange [-40:70]                                                                
+			set key off                                         
 			set timefmt "%Y-%m-%dT%H:%M:%S"                                                    
 			set format x "%Y-%m-%d"
 			set palette rgb 33,13,10
@@ -76,8 +73,7 @@ case $filter in
 		    	set title "Pressure per stations"
 		   		set xlabel "Stations"
 		    	set ylabel "Pressure"
-		    	set datafile separator ","                          
-		    	set yrange [90000:110000]    
+		    	set datafile separator ","                            
 		    	set xtics font ",6" 
 		    	set colorbox vertical origin screen 0.9, 0.2 size screen 0.05, 0.6 front  noinvert bdefault
 				set xtics offset 1,0.25 right
@@ -97,8 +93,7 @@ case $filter in
 		    set xlabel "Dates"
 		    set ylabel "Pressure"
 		    set datafile separator ","
-		    set xdata time         
-		    set yrange [90000:110000]                                        
+		    set xdata time                                               
 		    set timefmt "%Y-%m-%dT%H:%M:%S"                        
 		    set format x "%Y/%m/%d"
 		    set xtics offset 1,0.25 right  
@@ -118,8 +113,7 @@ case $filter in
 			set title "Pressure per dates"                                                  
 			set xlabel "Dates"                                                                
 			set ylabel "Pressure"                                                          
-			set xdata time                                                                                
-			set yrange [90000:110000]                                                                
+			set xdata time                                                                                                                                              
 			set timefmt "%Y-%m-%dT%H:%M:%S"                                                    
 			set format x "%Y-%m-%d"
 			set palette rgb 33,13,10
